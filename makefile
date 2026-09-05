@@ -1,4 +1,5 @@
 include .env
+export
 export PROJECT_ROOT=${shell pwd}
 
 
@@ -58,3 +59,8 @@ env-port-forwarder:
 env-port-close:
 	@docker compose down port-forwarder
 
+app-run:
+	@export LOGGER_FOLDER="${PROJECT_ROOT}/out/logs" && \
+	export POSTGRES_HOST=localhost && \
+	go mod tidy && \
+	go run "${PROJECT_ROOT}/cmd/main.go"
