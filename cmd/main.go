@@ -6,6 +6,9 @@ import (
 	core_pgx_pool "booking/internal/core/repository/postgres/pool/pgx"
 	core_http_middleware "booking/internal/core/transport/http/middlerware"
 	core_http_server "booking/internal/core/transport/http/server"
+	events_postgres_repository "booking/internal/features/events/repository/postgres"
+	events_service "booking/internal/features/events/service"
+	events_http_transport "booking/internal/features/events/transport/http"
 	users_postgres_repository "booking/internal/features/users/repository/postgres"
 	users_service "booking/internal/features/users/service"
 	users_http_transport "booking/internal/features/users/transport/http"
@@ -44,7 +47,11 @@ func main() {
 
 	usersRepository := users_postgres_repository.NewUsersRepository(pool)
 	usersService := users_service.NewUsersService(usersRepository)
-	usersTransport := users_http_transport.NewHTTPUsersHandler(usersService)
+	usersHTTPHandler := users_http_transport.NewHTTPUsersHandler(usersService)
+
+	eventsRepository := events_postgres_repository.NewEventsRepository(pool)
+	eventsServise := events_service.NewEventsService(eventsRepository)
+	eventsHTTPHandler := events_http_transport.NewEventsHTTPHandler(eventsServise)
 
 	httpConfig := core_http_server.NewConfigMust()
 
@@ -58,7 +65,8 @@ func main() {
 	)
 
 	apiVersionRouterV1 := core_http_server.NewAPIVersionRouter(core_http_server.ApiVersion1)
-	apiVersionRouterV1.RegisterRoutes(usersTransport.Routes()...)
+	apiVersionRouterV1.RegisterRoutes(usersHTTPHandler.Routes()...)
+	apiVersionRouterV1.RegisterRoutes(eventsHTTPHandler.Routes()...)
 
 	httpServer.RegisterAPIRoutes(
 		apiVersionRouterV1,

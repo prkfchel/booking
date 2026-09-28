@@ -19,13 +19,21 @@ CREATE TABLE booking.users (
 
 CREATE TABLE booking.events (
     id              SERIAL          PRIMARY KEY,
-    title           VARCHAR(500)                                    NOT NULL,
-    description     TEXT,
+    version         BIGINT                                          NOT NULL    DEFAULT 1,
+    title           VARCHAR(500)                                    NOT NULL    CHECK(char_length(title) BETWEEN 2 AND 500),
+    description     TEXT                                                        CHECK(char_length(title) > 5),
     total_tickets   INTEGER                                         NOT NULL,
     created_at      TIMESTAMP                                       NOT NULL,
-    event_place     VARCHAR(1000)                                   NOT NULL,
+    event_address   VARCHAR(1000)                                   NOT NULL,
     event_time      TIMESTAMP                                       NOT NULL,
-    owners_user_id  INTEGER         REFERENCES booking.users(id)    NOT NULL
+    owners_user_id  INTEGER         REFERENCES booking.users(id)    NOT NULL,
+    canceled        BOOLEAN                                         NOT NULL    DEFAULT FALSE,
+    canceled_at     TIMESTAMP                                                   DEFAULT NULL,
+    CHECK( 
+        (canceled = FALSE AND canceled_at IS NULL)
+        OR 
+        (canceled AND canceled_at IS NOT NULL AND canceled_at > created_at)
+    )
 );
 
 
@@ -34,5 +42,11 @@ CREATE TABLE booking.bookings (
     event_id    INTEGER     REFERENCES booking.events(id)   NOT NULL,
     user_id     INTEGER     REFERENCES booking.users(id)    NOT NULL,
     created_at  TIMESTAMP                                   NOT NULL   DEFAULT now(),
-    canceled    BOOLEAN                                     NOT NULL   DEFAULT FALSE
+    canceled    BOOLEAN                                     NOT NULL   DEFAULT FALSE,
+    canceled_at TIMESTAMP                                              DEFAULT NULL
+    CHECK( 
+        (canceled = FALSE AND canceled_at IS NULL)
+        OR 
+        (canceled AND canceled_at IS NOT NULL AND canceled_at > created_at)
+    )
 );

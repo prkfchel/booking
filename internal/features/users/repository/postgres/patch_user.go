@@ -22,7 +22,7 @@ func (r *UsersRepository) PatchUser(
 			name = $1,
 			phone_number = $2,
 			mail = $3
-		WHERE id = $4 AND Version= $5
+		WHERE id = $4 AND version = $5
 		RETURNING id, version, name, phone_number, mail, created_at;
 	`
 
