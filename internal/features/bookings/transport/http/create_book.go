@@ -9,8 +9,8 @@ import (
 )
 
 type CreateBookRequestDTO struct {
-	EventID int `json:"event_id"`
-	UserID  int `json:"user_id"`
+	EventID int `json:"event_id" validate:"required"`
+	UserID  int `json:"user_id" validate:"required"`
 }
 
 type CreateBookResponseDTO BookResponseDTO

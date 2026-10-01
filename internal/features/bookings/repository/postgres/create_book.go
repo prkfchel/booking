@@ -28,13 +28,38 @@ func (r *BookRepository) CreateBook(
 	defer tx.Rollback(ctx)
 
 	query1 := `
+		SELECT COUNT(*) FROM booking.bookings
+		WHERE user_id = $1 AND event_id = $2;
+	`
+
+	var usersBooksForEventCount int
+	row := tx.QueryRow(ctx, query1, book.UserID, book.EventID)
+
+	err = row.Scan(&usersBooksForEventCount)
+	if err != nil {
+		return domain.Book{}, fmt.Errorf(
+			"user id='%d' and event id='%d' scan error: %w",
+			book.UserID,
+			book.EventID,
+			err,
+		)
+	}
+
+	if usersBooksForEventCount >= 5 {
+		return domain.Book{}, fmt.Errorf(
+			"user cant book more than 5 tickets on the same event: %w",
+			core_errors.ErrConflict,
+		)
+	}
+
+	query2 := `
 		SELECT total_tickets FROM booking.events
 		WHERE id = $1 AND canceled = FALSE
 		FOR UPDATE;
 	`
 
 	var totalTickets int
-	row := tx.QueryRow(ctx, query1, book.EventID)
+	row = tx.QueryRow(ctx, query2, book.EventID)
 
 	err = row.Scan(&totalTickets)
 	if err != nil {
@@ -52,13 +77,13 @@ func (r *BookRepository) CreateBook(
 		)
 	}
 
-	query2 := `
+	query3 := `
 		SELECT COUNT(*) FROM booking.bookings
 		WHERE event_id = $1 AND canceled = FALSE;
 	`
 
 	var soldTickets int
-	row = tx.QueryRow(ctx, query2, book.EventID)
+	row = tx.QueryRow(ctx, query3, book.EventID)
 
 	err = row.Scan(&soldTickets)
 	if err != nil {
@@ -75,7 +100,7 @@ func (r *BookRepository) CreateBook(
 		)
 	}
 
-	query3 := `
+	query4 := `
 		INSERT INTO booking.bookings (
 			event_id,
 			user_id,
@@ -93,7 +118,7 @@ func (r *BookRepository) CreateBook(
 
 	row = tx.QueryRow(
 		ctx,
-		query3,
+		query4,
 		book.EventID,
 		book.UserID,
 		time.Now(),
