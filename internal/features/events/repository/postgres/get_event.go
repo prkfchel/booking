@@ -2,7 +2,10 @@ package events_postgres_repository
 
 import (
 	"booking/internal/core/domain"
+	core_errors "booking/internal/core/errors"
+	core_postgres_pool "booking/internal/core/repository/postgres/pool"
 	"context"
+	"errors"
 	"fmt"
 )
 
@@ -47,6 +50,14 @@ func (r *EventsRepository) GetEvent(
 	)
 
 	if err != nil {
+		if errors.Is(err, core_postgres_pool.ErrNoRows) {
+			return domain.Event{}, fmt.Errorf(
+				"event with id='%d' %w: %v",
+				id,
+				core_errors.ErrNotFound,
+				err,
+			)
+		}
 		return domain.Event{}, fmt.Errorf(
 			"scan error: %w",
 			err,

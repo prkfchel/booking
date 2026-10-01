@@ -2,7 +2,10 @@ package users_postgres_repository
 
 import (
 	"booking/internal/core/domain"
+	core_errors "booking/internal/core/errors"
+	core_postgres_pool "booking/internal/core/repository/postgres/pool"
 	"context"
+	"errors"
 	"fmt"
 )
 
@@ -31,6 +34,14 @@ func (r *UsersRepository) GetUser(
 		&model.CreatedAt,
 	)
 	if err != nil {
+		if errors.Is(err, core_postgres_pool.ErrNoRows) {
+			return domain.User{}, fmt.Errorf(
+				"user with id='%d' %w: %v",
+				userID,
+				core_errors.ErrNotFound,
+				err,
+			)
+		}
 		return domain.User{}, fmt.Errorf(
 			"select error: %w",
 			err,

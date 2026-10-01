@@ -21,9 +21,9 @@ CREATE TABLE booking.events (
     id              SERIAL          PRIMARY KEY,
     version         BIGINT                                          NOT NULL    DEFAULT 1,
     title           VARCHAR(500)                                    NOT NULL    CHECK(char_length(title) BETWEEN 2 AND 500),
-    description     TEXT                                                        CHECK(char_length(title) > 5),
-    total_tickets   INTEGER                                         NOT NULL,
-    created_at      TIMESTAMP                                       NOT NULL,
+    description     TEXT                                                        CHECK(char_length(description) > 5),
+    total_tickets   INTEGER                                         NOT NULL    CHECK(total_tickets > 0),
+    created_at      TIMESTAMP                                       NOT NULL    DEFAULT now(),
     event_address   VARCHAR(1000)                                   NOT NULL,
     event_time      TIMESTAMP                                       NOT NULL,
     owners_user_id  INTEGER         REFERENCES booking.users(id)    NOT NULL,
@@ -41,12 +41,12 @@ CREATE TABLE booking.bookings (
     id          SERIAL      PRIMARY KEY,
     event_id    INTEGER     REFERENCES booking.events(id)   NOT NULL,
     user_id     INTEGER     REFERENCES booking.users(id)    NOT NULL,
-    created_at  TIMESTAMP                                   NOT NULL   DEFAULT now(),
-    canceled    BOOLEAN                                     NOT NULL   DEFAULT FALSE,
-    canceled_at TIMESTAMP                                              DEFAULT NULL
+    created_at  TIMESTAMPTZ                                 NOT NULL     DEFAULT now(),
+    canceled    BOOLEAN                                     NOT NULL     DEFAULT FALSE,
+    canceled_at TIMESTAMPTZ                                              DEFAULT NULL
     CHECK( 
         (canceled = FALSE AND canceled_at IS NULL)
         OR 
-        (canceled AND canceled_at IS NOT NULL AND canceled_at > created_at)
+        (canceled AND canceled_at IS NOT NULL AND canceled_at >= created_at)
     )
 );
