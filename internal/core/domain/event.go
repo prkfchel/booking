@@ -278,34 +278,28 @@ func NewEventsQueryFilter(
 }
 
 func (filter EventsQueryFilter) Validate() error {
-	if filter.Limit != nil {
-		if *filter.Limit < 1 {
-			return fmt.Errorf(
-				"limit must be positive: %d: %w",
-				*filter.Limit,
-				core_errors.ErrInvalidArgument,
-			)
-		}
+	if filter.Limit != nil && *filter.Limit < 1 {
+		return fmt.Errorf(
+			"limit must be positive: %d: %w",
+			*filter.Limit,
+			core_errors.ErrInvalidArgument,
+		)
 	}
 
-	if filter.Offset != nil {
-		if *filter.Offset < 1 {
-			return fmt.Errorf(
-				"offset must be positive: %d: %w",
-				*filter.Offset,
-				core_errors.ErrInvalidArgument,
-			)
-		}
+	if filter.Offset != nil && *filter.Offset < 1 {
+		return fmt.Errorf(
+			"offset must be positive: %d: %w",
+			*filter.Offset,
+			core_errors.ErrInvalidArgument,
+		)
 	}
 
-	if filter.OwnersUserId != nil {
-		if *filter.OwnersUserId < 0 {
-			return fmt.Errorf(
-				"owners user id must be positive: %d: %w",
-				*filter.OwnersUserId,
-				core_errors.ErrInvalidArgument,
-			)
-		}
+	if filter.OwnersUserId != nil && *filter.OwnersUserId < 0 {
+		return fmt.Errorf(
+			"owners user id must be positive: %d: %w",
+			*filter.OwnersUserId,
+			core_errors.ErrInvalidArgument,
+		)
 	}
 
 	if filter.DateFrom != nil && filter.DateTo != nil {
