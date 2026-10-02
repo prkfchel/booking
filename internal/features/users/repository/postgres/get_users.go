@@ -16,6 +16,7 @@ func (r *UsersRepository) GetUsers(
 
 	query := `
 		SELECT id, version, name, phone_number, mail, created_at FROM booking.users
+		WHERE deleted_at IS NULL
 		ORDER BY id
 		LIMIT $1 OFFSET $2;
 	`
