@@ -34,7 +34,7 @@ CREATE TABLE booking.events (
     event_time      TIMESTAMP                                       NOT NULL,
     owners_user_id  INTEGER         REFERENCES booking.users(id)    NOT NULL,
     canceled        BOOLEAN                                         NOT NULL    DEFAULT FALSE,
-    canceled_at     TIMESTAMPTZ                                                   DEFAULT NULL,
+    canceled_at     TIMESTAMPTZ                                                 DEFAULT NULL,
     CHECK( 
         (canceled = FALSE AND canceled_at IS NULL)
         OR 
