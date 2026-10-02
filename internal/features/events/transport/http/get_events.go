@@ -11,12 +11,24 @@ import (
 
 type GetEventsReaponseDTO []eventResponseDTO
 
+type getEventsRequestDTO struct {
+	Title   *string `json:"title"`
+	Address *string `json:"address"`
+}
+
 func (h *EventsHTTPHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)
 	responseHandler := core_http_response.NewHTTPResponseWriter(log, w)
 
-	filter, err := GetEventsFilter(r)
+	var request getEventsRequestDTO
+
+	if err := core_http_request.DecodeAndValidateRequest(r, &request); err != nil {
+		responseHandler.ErrorResponse(err, "failed to decode request json")
+		return
+	}
+
+	filter, err := GetEventsFilter(r, request)
 	if err != nil {
 		responseHandler.ErrorResponse(err, "failed to get filter params")
 		return
@@ -33,7 +45,7 @@ func (h *EventsHTTPHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
 	responseHandler.JSONResponse(http.StatusOK, response)
 }
 
-func GetEventsFilter(r *http.Request) (
+func GetEventsFilter(r *http.Request, request getEventsRequestDTO) (
 	domain.EventsQueryFilter,
 	error,
 ) {
@@ -41,8 +53,6 @@ func GetEventsFilter(r *http.Request) (
 	const (
 		limitQueryParamKey    = "limit"
 		offsetQueryParamKey   = "offset"
-		titleQueryParamKey    = "title"
-		addressQueryParamKey  = "address"
 		dateFromQueryParamKey = "dateFrom"
 		dateToQueryParamKey   = "dateTo"
 		ownersIdQueryParamKey = "ownersId"
@@ -72,10 +82,6 @@ func GetEventsFilter(r *http.Request) (
 		)
 	}
 
-	title := core_http_request.GetStringQueryParams(r, titleQueryParamKey)
-
-	address := core_http_request.GetStringQueryParams(r, addressQueryParamKey)
-
 	dateFrom, err := core_http_request.GetDateQueryParams(r, dateFromQueryParamKey)
 	if err != nil {
 		return domain.EventsQueryFilter{}, fmt.Errorf(
@@ -93,8 +99,8 @@ func GetEventsFilter(r *http.Request) (
 	}
 
 	filter := domain.NewEventsQueryFilter(
-		title,
-		address,
+		request.Title,
+		request.Address,
 		dateFrom,
 		dateTo,
 		ownersUserId,
