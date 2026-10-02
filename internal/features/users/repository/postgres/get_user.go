@@ -18,7 +18,7 @@ func (r *UsersRepository) GetUser(
 
 	query := `
 		SELECT id, version, name, phone_number, mail, created_at FROM booking.users
-		WHERE id = $1;
+		WHERE id = $1 AND deleted_at IS NULL;
 	`
 
 	row := r.Pool.QueryRow(ctx, query, userID)
