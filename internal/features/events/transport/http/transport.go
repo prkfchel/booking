@@ -36,8 +36,13 @@ type EventsService interface {
 
 	GetEvents(
 		ctx context.Context,
-		filter domain.EventsQueryFilter,
+		filter domain.EventsFilter,
 	) ([]domain.Event, error)
+
+	CancelEvent(
+		ctx context.Context,
+		id int,
+	) (domain.Event, error)
 }
 
 func (h *EventsHTTPHandler) Routes() []core_http_server.Route {
@@ -61,6 +66,11 @@ func (h *EventsHTTPHandler) Routes() []core_http_server.Route {
 			Method:  http.MethodGet,
 			Path:    "/events",
 			Handler: h.GetEvents,
+		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/events/{id}/cancel",
+			Handler: h.CancelEvent,
 		},
 	}
 }

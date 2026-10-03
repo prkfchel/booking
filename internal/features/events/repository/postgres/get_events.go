@@ -9,7 +9,7 @@ import (
 
 func (r *EventsRepository) GetEvents(
 	ctx context.Context,
-	filter domain.EventsQueryFilter,
+	filter domain.EventsFilter,
 ) ([]domain.Event, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.Pool.OpTimeout())
 	defer cancel()

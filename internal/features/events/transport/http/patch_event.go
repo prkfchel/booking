@@ -18,7 +18,6 @@ type requestPatchEvent struct {
 	TotalTickets core_http_type.Nullable[int]       `json:"total_tickets"`
 	EventAddress core_http_type.Nullable[string]    `json:"event_address"`
 	EventTime    core_http_type.Nullable[time.Time] `json:"event_time"`
-	Canceled     core_http_type.Nullable[bool]      `json:"canceled"`
 }
 
 type patchEventResponseDTO eventResponseDTO
@@ -61,7 +60,6 @@ func PatchEventDoaminFromDTO(request requestPatchEvent) domain.PatchEvent {
 		request.TotalTickets.ToDomain(),
 		request.EventAddress.ToDomain(),
 		request.EventTime.ToDomain(),
-		request.Canceled.ToDomain(),
 	)
 }
 

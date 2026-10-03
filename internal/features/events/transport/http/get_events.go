@@ -46,7 +46,7 @@ func (h *EventsHTTPHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetEventsFilter(r *http.Request, request getEventsRequestDTO) (
-	domain.EventsQueryFilter,
+	domain.EventsFilter,
 	error,
 ) {
 
@@ -60,7 +60,7 @@ func GetEventsFilter(r *http.Request, request getEventsRequestDTO) (
 
 	limit, err := core_http_request.GetIntQueryParams(r, limitQueryParamKey)
 	if err != nil {
-		return domain.EventsQueryFilter{}, fmt.Errorf(
+		return domain.EventsFilter{}, fmt.Errorf(
 			"failed to get limit query param: %w",
 			err,
 		)
@@ -68,7 +68,7 @@ func GetEventsFilter(r *http.Request, request getEventsRequestDTO) (
 
 	offset, err := core_http_request.GetIntQueryParams(r, offsetQueryParamKey)
 	if err != nil {
-		return domain.EventsQueryFilter{}, fmt.Errorf(
+		return domain.EventsFilter{}, fmt.Errorf(
 			"failed to get offset query param: %w",
 			err,
 		)
@@ -76,7 +76,7 @@ func GetEventsFilter(r *http.Request, request getEventsRequestDTO) (
 
 	ownersUserId, err := core_http_request.GetIntQueryParams(r, ownersIdQueryParamKey)
 	if err != nil {
-		return domain.EventsQueryFilter{}, fmt.Errorf(
+		return domain.EventsFilter{}, fmt.Errorf(
 			"failed to get owners user id: %w",
 			err,
 		)
@@ -84,7 +84,7 @@ func GetEventsFilter(r *http.Request, request getEventsRequestDTO) (
 
 	dateFrom, err := core_http_request.GetDateQueryParams(r, dateFromQueryParamKey)
 	if err != nil {
-		return domain.EventsQueryFilter{}, fmt.Errorf(
+		return domain.EventsFilter{}, fmt.Errorf(
 			"failed to get dateFrom: %w",
 			err,
 		)
@@ -92,7 +92,7 @@ func GetEventsFilter(r *http.Request, request getEventsRequestDTO) (
 
 	dateTo, err := core_http_request.GetDateQueryParams(r, dateToQueryParamKey)
 	if err != nil {
-		return domain.EventsQueryFilter{}, fmt.Errorf(
+		return domain.EventsFilter{}, fmt.Errorf(
 			"failed to get dateTo: %w",
 			err,
 		)
