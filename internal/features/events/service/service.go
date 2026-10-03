@@ -33,6 +33,11 @@ type EventsRepository interface {
 
 	GetEvents(
 		ctx context.Context,
-		filter domain.EventsQueryFilter,
+		filter domain.EventsFilter,
 	) ([]domain.Event, error)
+
+	CancelEvent(
+		ctx context.Context,
+		id int,
+	) (domain.Event, error)
 }

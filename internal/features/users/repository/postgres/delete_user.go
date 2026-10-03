@@ -53,6 +53,7 @@ func (r *UsersRepository) DeleteUser(
 	query2 := `
 		UPDATE booking.events
 		SET 
+			version = version + 1,
 			canceled = TRUE,
 			canceled_at = now()
 		WHERE owners_user_id = $1 AND canceled_at IS NULL;

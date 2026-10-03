@@ -8,7 +8,7 @@ import (
 
 func (s *EventsService) GetEvents(
 	ctx context.Context,
-	filter domain.EventsQueryFilter,
+	filter domain.EventsFilter,
 ) ([]domain.Event, error) {
 	if err := filter.Validate(); err != nil {
 		return nil, fmt.Errorf(

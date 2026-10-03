@@ -135,7 +135,6 @@ type PatchEvent struct {
 	TotalTickets Nullable[int]
 	EventAddress Nullable[string]
 	EventTime    Nullable[time.Time]
-	Canceled     Nullable[bool]
 }
 
 func NewPatchEvent(
@@ -144,7 +143,6 @@ func NewPatchEvent(
 	totalTickets Nullable[int],
 	eventAddress Nullable[string],
 	eventTime Nullable[time.Time],
-	canceled Nullable[bool],
 ) PatchEvent {
 	return PatchEvent{
 		Title:        title,
@@ -152,7 +150,6 @@ func NewPatchEvent(
 		TotalTickets: totalTickets,
 		EventAddress: eventAddress,
 		EventTime:    eventTime,
-		Canceled:     canceled,
 	}
 }
 
@@ -181,13 +178,6 @@ func (patch PatchEvent) Validate() error {
 	if patch.EventTime.Set && patch.EventTime.Value == nil {
 		return fmt.Errorf(
 			"event time tickets cant be set and null: %w",
-			core_errors.ErrInvalidArgument,
-		)
-	}
-
-	if patch.Canceled.Set && patch.Canceled.Value == nil {
-		return fmt.Errorf(
-			"canceled tickets cant be set and null: %w",
 			core_errors.ErrInvalidArgument,
 		)
 	}
@@ -226,10 +216,6 @@ func (event *Event) ApplyPatch(patch PatchEvent) error {
 		tmp.EventTime = *patch.EventTime.Value
 	}
 
-	if patch.Canceled.Set {
-		tmp.Canceled = *patch.Canceled.Value
-	}
-
 	if err := tmp.Validate(); err != nil {
 		return fmt.Errorf(
 			"failed to validate applied patch: %w",
@@ -247,7 +233,7 @@ func (event *Event) ApplyPatch(patch PatchEvent) error {
 	return nil
 }
 
-type EventsQueryFilter struct {
+type EventsFilter struct {
 	Title        *string
 	EventAddress *string
 	DateFrom     *time.Time
@@ -265,8 +251,8 @@ func NewEventsQueryFilter(
 	ownersUserId *int,
 	limit *int,
 	offset *int,
-) EventsQueryFilter {
-	return EventsQueryFilter{
+) EventsFilter {
+	return EventsFilter{
 		Title:        title,
 		EventAddress: eventAddress,
 		DateFrom:     dateFrom,
@@ -277,29 +263,35 @@ func NewEventsQueryFilter(
 	}
 }
 
-func (filter EventsQueryFilter) Validate() error {
-	if filter.Limit != nil && *filter.Limit < 1 {
-		return fmt.Errorf(
-			"limit must be positive: %d: %w",
-			*filter.Limit,
-			core_errors.ErrInvalidArgument,
-		)
+func (filter EventsFilter) Validate() error {
+	if filter.Limit != nil {
+		if *filter.Limit < 1 {
+			return fmt.Errorf(
+				"limit must be positive: %d: %w",
+				*filter.Limit,
+				core_errors.ErrInvalidArgument,
+			)
+		}
 	}
 
-	if filter.Offset != nil && *filter.Offset < 1 {
-		return fmt.Errorf(
-			"offset must be positive: %d: %w",
-			*filter.Offset,
-			core_errors.ErrInvalidArgument,
-		)
+	if filter.Offset != nil {
+		if *filter.Offset < 1 {
+			return fmt.Errorf(
+				"offset must be positive: %d: %w",
+				*filter.Offset,
+				core_errors.ErrInvalidArgument,
+			)
+		}
 	}
 
-	if filter.OwnersUserId != nil && *filter.OwnersUserId < 0 {
-		return fmt.Errorf(
-			"owners user id must be positive: %d: %w",
-			*filter.OwnersUserId,
-			core_errors.ErrInvalidArgument,
-		)
+	if filter.OwnersUserId != nil {
+		if *filter.OwnersUserId < 0 {
+			return fmt.Errorf(
+				"owners user id must be positive: %d: %w",
+				*filter.OwnersUserId,
+				core_errors.ErrInvalidArgument,
+			)
+		}
 	}
 
 	if filter.DateFrom != nil && filter.DateTo != nil {
