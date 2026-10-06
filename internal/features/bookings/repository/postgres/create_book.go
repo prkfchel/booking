@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+const maxUserBooksForEvent = 5
+
 func (r *BookRepository) CreateBook(
 	ctx context.Context,
 	book domain.Book,
@@ -28,33 +30,32 @@ func (r *BookRepository) CreateBook(
 	defer tx.Rollback(ctx)
 
 	query1 := `
-		SELECT COUNT(*) FROM booking.bookings
-		WHERE user_id = $1 AND event_id = $2;
+		SELECT 1 FROM booking.users
+		WHERE id = $1 AND deleted_at IS NULL
+		FOR SHARE;
 	`
 
-	var usersBooksForEventCount int
-	row := tx.QueryRow(ctx, query1, book.UserID, book.EventID)
+	var one int
+	row := tx.QueryRow(ctx, query1, book.UserID)
 
-	err = row.Scan(&usersBooksForEventCount)
+	err = row.Scan(&one)
 	if err != nil {
+		if errors.Is(err, core_postgres_pool.ErrNoRows) {
+			return domain.Book{}, fmt.Errorf(
+				"user with id='%d': %w",
+				book.UserID,
+				core_errors.ErrNotFound,
+			)
+		}
 		return domain.Book{}, fmt.Errorf(
-			"user id='%d' and event id='%d' scan error: %w",
-			book.UserID,
-			book.EventID,
+			"scan error: %w",
 			err,
-		)
-	}
-
-	if usersBooksForEventCount >= 5 {
-		return domain.Book{}, fmt.Errorf(
-			"user cant book more than 5 tickets on the same event: %w",
-			core_errors.ErrConflict,
 		)
 	}
 
 	query2 := `
 		SELECT total_tickets FROM booking.events
-		WHERE id = $1 AND canceled = FALSE
+		WHERE id = $1 AND canceled = FALSE AND event_time > now()
 		FOR UPDATE;
 	`
 
@@ -78,22 +79,32 @@ func (r *BookRepository) CreateBook(
 	}
 
 	query3 := `
-		SELECT COUNT(*) FROM booking.bookings
-		WHERE event_id = $1 AND canceled = FALSE;
+		SELECT 
+			COUNT(*) FILTER (WHERE user_id = $1),
+			COUNT(*) 
+		FROM booking.bookings
+		WHERE event_id = $2 AND canceled_at IS NULL;
 	`
 
-	var soldTickets int
-	row = tx.QueryRow(ctx, query3, book.EventID)
+	var userBooked, totalBooked int
+	row = tx.QueryRow(ctx, query3, book.UserID, book.EventID)
 
-	err = row.Scan(&soldTickets)
+	err = row.Scan(&userBooked, &totalBooked)
 	if err != nil {
 		return domain.Book{}, fmt.Errorf(
-			"sold tickets scan error: %w",
+			"scan error: %w",
 			err,
 		)
 	}
 
-	if soldTickets >= totalTickets {
+	if userBooked >= maxUserBooksForEvent {
+		return domain.Book{}, fmt.Errorf(
+			"no avaliable tickets for user: %w",
+			core_errors.ErrConflict,
+		)
+	}
+
+	if totalBooked >= totalTickets {
 		return domain.Book{}, fmt.Errorf(
 			"no avaliable tickets: %w",
 			core_errors.ErrConflict,
