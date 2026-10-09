@@ -5,36 +5,38 @@ import (
 	"time"
 )
 
-type eventResponseDTO struct {
+type EventResponseDTO struct {
 	ID           int
+	Version      int
 	Title        string
 	Description  *string
 	TotalTickets int
 	CreatedAt    time.Time
-	EventAddress string
-	EventTime    time.Time
-	OwnersUserId int
+	Address      string
+	StartsAt     time.Time
+	OwnerUserID  int
 	Canceled     bool
 	CanceledAt   *time.Time
 }
 
-func DTOFromDomain(domain domain.Event) eventResponseDTO {
-	return eventResponseDTO{
+func DTOFromDomain(domain domain.Event) EventResponseDTO {
+	return EventResponseDTO{
 		ID:           domain.ID,
+		Version:      domain.Version,
 		Title:        domain.Title,
 		Description:  domain.Description,
 		TotalTickets: domain.TotalTickets,
 		CreatedAt:    domain.CreatedAt,
-		EventAddress: domain.EventAddress,
-		EventTime:    domain.EventTime,
-		OwnersUserId: domain.OwnersUserId,
+		Address:      domain.Address,
+		StartsAt:     domain.StartsAt,
+		OwnerUserID:  domain.OwnerUserID,
 		Canceled:     domain.Canceled,
 		CanceledAt:   domain.CanceledAt,
 	}
 }
 
-func DTOFromDomains(domains []domain.Event) []eventResponseDTO {
-	response := make([]eventResponseDTO, len(domains))
+func DTOFromDomains(domains []domain.Event) []EventResponseDTO {
+	response := make([]EventResponseDTO, len(domains))
 
 	for i, domain := range domains {
 		response[i] = DTOFromDomain(domain)

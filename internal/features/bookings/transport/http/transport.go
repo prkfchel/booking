@@ -20,23 +20,23 @@ func NewHTTPBookHandler(s BookService) *BookHTTPHandler {
 type BookService interface {
 	CreateBook(
 		ctx context.Context,
-		book domain.Book,
-	) (domain.Book, error)
+		booking domain.Booking,
+	) (domain.Booking, error)
 
 	GetBook(
 		ctx context.Context,
-		id int,
-	) (domain.Book, error)
+		bookingID int,
+	) (domain.Booking, error)
 
 	GetBooks(
 		ctx context.Context,
-		filter domain.BooksQueryFilter,
-	) ([]domain.Book, error)
+		filter domain.BookingsFilter,
+	) ([]domain.Booking, error)
 
 	CancelBook(
 		ctx context.Context,
-		id int,
-	) (domain.Book, error)
+		bookingID int,
+	) (domain.Booking, error)
 }
 
 func (h *BookHTTPHandler) Routes() []core_http_server.Route {
@@ -57,8 +57,8 @@ func (h *BookHTTPHandler) Routes() []core_http_server.Route {
 			Handler: h.GetBooks,
 		},
 		{
-			Method:  http.MethodPatch,
-			Path:    "/books/{id}",
+			Method:  http.MethodPost,
+			Path:    "/books/{id}/cancel",
 			Handler: h.CancelBook,
 		},
 	}

@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func getBookIdPathValue(r *http.Request) (int, error) {
+func getBookIDPathValue(r *http.Request) (int, error) {
 	const bookIdPathValueKey = "id"
 
 	id, err := core_http_request.GetIntPathValuese(r, bookIdPathValueKey)

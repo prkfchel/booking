@@ -6,14 +6,14 @@ import (
 	"net/http"
 )
 
-type getEventReaponseDTO eventResponseDTO
+type getEventReaponseDTO EventResponseDTO
 
 func (h *EventsHTTPHandler) GetEvent(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)
 	responseHandler := core_http_response.NewHTTPResponseWriter(log, w)
 
-	id, err := getEventIdPathValue(r)
+	id, err := getEventIDPathValue(r)
 	if err != nil {
 		responseHandler.ErrorResponse(err, "failed to get event id")
 		return

@@ -1,18 +1,29 @@
 package domain
 
 import (
-	core_errors "booking/internal/core/errors"
 	"fmt"
+	"net/mail"
 	"regexp"
 	"time"
+
+	coreerrors "booking/internal/core/errors"
 )
+
+const (
+	userNameMinLen  = 3
+	userNameMaxLen  = 100
+	userEmailMaxLen = 100
+)
+
+// +, затем 9-14 цифр (всего 10-15 символов).
+var phoneRe = regexp.MustCompile(`^\+[0-9]{9,14}$`)
 
 type User struct {
 	ID          int
 	Version     int
 	Name        string
 	PhoneNumber *string
-	Mail        *string
+	Email       *string
 	CreatedAt   time.Time
 }
 
@@ -21,7 +32,7 @@ func NewUser(
 	version int,
 	name string,
 	phoneNumber *string,
-	mail *string,
+	email *string,
 	createdAt time.Time,
 ) User {
 	return User{
@@ -29,7 +40,7 @@ func NewUser(
 		Version:     version,
 		Name:        name,
 		PhoneNumber: phoneNumber,
-		Mail:        mail,
+		Email:       email,
 		CreatedAt:   createdAt,
 	}
 }
@@ -37,68 +48,63 @@ func NewUser(
 func NewUninitializedUser(
 	name string,
 	phoneNumber *string,
-	mail *string,
+	email *string,
 ) User {
 	return NewUser(
 		UninitializedID,
 		UninitializedVersion,
 		name,
 		phoneNumber,
-		mail,
+		email,
 		UninitializedCreatedAt,
 	)
 }
 
 func (u *User) Validate() error {
 	nameLen := len([]rune(u.Name))
-	if nameLen < 3 || nameLen > 100 {
+	if nameLen < userNameMinLen || nameLen > userNameMaxLen {
 		return fmt.Errorf(
-			"invalid name length: %d: %w",
+			"name len must be between %d and %d: %d: %w",
+			userNameMinLen,
+			userNameMaxLen,
 			nameLen,
-			core_errors.ErrInvalidArgument,
+			coreerrors.ErrInvalidArgument,
 		)
 	}
 
-	if u.PhoneNumber != nil {
-		phoneNumberLen := len([]rune(*u.PhoneNumber))
+	if u.PhoneNumber != nil && !phoneRe.MatchString(*u.PhoneNumber) {
+		return fmt.Errorf(
+			"invalid phone number format, expected +XXXXXXXXXX (10-15 chars): %w",
+			coreerrors.ErrInvalidArgument,
+		)
+	}
 
-		if phoneNumberLen < 10 || phoneNumberLen > 15 {
-			return fmt.Errorf(
-				"invalid phone number length: %d: %w",
-				phoneNumberLen,
-				core_errors.ErrInvalidArgument,
-			)
-		}
-
-		re := regexp.MustCompile(`^\+[0-9]+$`)
-
-		if !re.MatchString(*u.PhoneNumber) {
-			return fmt.Errorf(
-				"invalid phone number format: %w",
-				core_errors.ErrInvalidArgument,
-			)
+	if u.Email != nil {
+		if err := validateEmail(*u.Email); err != nil {
+			return err
 		}
 	}
 
-	if u.Mail != nil {
-		mailLen := len([]rune(*u.Mail))
+	return nil
+}
 
-		if mailLen < 9 || mailLen > 100 {
-			return fmt.Errorf(
-				"invalid mail length: %d: %w",
-				mailLen,
-				core_errors.ErrInvalidArgument,
-			)
-		}
+func validateEmail(email string) error {
+	if len([]rune(email)) > userEmailMaxLen {
+		return fmt.Errorf(
+			"email len must be at most %d: %w",
+			userEmailMaxLen,
+			coreerrors.ErrInvalidArgument,
+		)
+	}
 
-		re := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
-
-		if !re.MatchString(*u.Mail) {
-			return fmt.Errorf(
-				"invalid mail format: %w",
-				core_errors.ErrInvalidArgument,
-			)
-		}
+	// ParseAddress принимает и формат "Name <a@b.c>",
+	// поэтому дополнительно сверяем, что это чистый адрес.
+	addr, err := mail.ParseAddress(email)
+	if err != nil || addr.Address != email {
+		return fmt.Errorf(
+			"invalid email format: %w",
+			coreerrors.ErrInvalidArgument,
+		)
 	}
 
 	return nil
@@ -107,64 +113,58 @@ func (u *User) Validate() error {
 type PatchUser struct {
 	Name        Nullable[string]
 	PhoneNumber Nullable[string]
-	Mail        Nullable[string]
+	Email       Nullable[string]
 }
 
 func NewPatchUser(
 	name Nullable[string],
 	phoneNumber Nullable[string],
-	mail Nullable[string],
+	email Nullable[string],
 ) PatchUser {
 	return PatchUser{
 		Name:        name,
 		PhoneNumber: phoneNumber,
-		Mail:        mail,
+		Email:       email,
 	}
 }
 
-func (p *PatchUser) Validate() error {
+func (p PatchUser) Validate() error {
 	if p.Name.Set && p.Name.Value == nil {
 		return fmt.Errorf(
-			"name cant be set and be null: %w",
-			core_errors.ErrInvalidArgument,
+			"name can't be set and null: %w",
+			coreerrors.ErrInvalidArgument,
 		)
 	}
+
 	return nil
 }
 
-func (user *User) AppyPatch(patch PatchUser) error {
-	err := patch.Validate()
-	if err != nil {
-		return fmt.Errorf(
-			"failed to validate patch: %w",
-			err,
-		)
+func (u *User) ApplyPatch(patch PatchUser) error {
+	if err := patch.Validate(); err != nil {
+		return fmt.Errorf("failed to validate patch: %w", err)
 	}
 
-	tmp := *user
+	tmp := *u
 
 	if patch.Name.Set {
 		tmp.Name = *patch.Name.Value
 	}
 
-	if patch.Name.Set {
+	if patch.PhoneNumber.Set {
 		tmp.PhoneNumber = patch.PhoneNumber.Value
 	}
 
-	if patch.Mail.Set {
-		tmp.Mail = patch.Mail.Value
+	if patch.Email.Set {
+		tmp.Email = patch.Email.Value
 	}
 
-	if err = tmp.Validate(); err != nil {
-		return fmt.Errorf(
-			"failed to validate applied patch: %w",
-			err,
-		)
+	if err := tmp.Validate(); err != nil {
+		return fmt.Errorf("failed to validate applied patch: %w", err)
 	}
 
-	user.Name = tmp.Name
-	user.PhoneNumber = tmp.PhoneNumber
-	user.Mail = tmp.Mail
+	u.Name = tmp.Name
+	u.PhoneNumber = tmp.PhoneNumber
+	u.Email = tmp.Email
 
 	return nil
 }

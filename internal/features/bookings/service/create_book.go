@@ -8,10 +8,10 @@ import (
 
 func (s *BookService) CreateBook(
 	ctx context.Context,
-	book domain.Book,
-) (domain.Book, error) {
+	book domain.Booking,
+) (domain.Booking, error) {
 	if err := book.Validate(); err != nil {
-		return domain.Book{}, fmt.Errorf(
+		return domain.Booking{}, fmt.Errorf(
 			"validation error: %w",
 			err,
 		)
@@ -20,7 +20,7 @@ func (s *BookService) CreateBook(
 	createdBook, err := s.Repository.CreateBook(ctx, book)
 
 	if err != nil {
-		return domain.Book{}, fmt.Errorf(
+		return domain.Booking{}, fmt.Errorf(
 			"failed to cvreate book: %w",
 			err,
 		)

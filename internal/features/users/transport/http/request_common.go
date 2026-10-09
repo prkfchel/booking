@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func getUserIdPathValue(r *http.Request) (int, error) {
+func getUserIDPathValue(r *http.Request) (int, error) {
 	const userIdPathValueKey = "id"
 
 	id, err := core_http_request.GetIntPathValuese(r, userIdPathValueKey)

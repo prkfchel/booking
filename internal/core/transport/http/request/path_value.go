@@ -22,7 +22,6 @@ func GetIntPathValuese(r *http.Request, key string) (int, error) {
 		return 0, fmt.Errorf(
 			"path value='%s' not a valid integer: %v: %w",
 			pathValue,
-			key,
 			err,
 			core_errors.ErrInvalidArgument,
 		)

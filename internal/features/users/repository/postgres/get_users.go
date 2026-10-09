@@ -14,14 +14,14 @@ func (r *UsersRepository) GetUsers(
 	ctx, cancel := context.WithTimeout(ctx, r.Pool.OpTimeout())
 	defer cancel()
 
-	query := `
+	queryGetUsers := `
 		SELECT id, version, name, phone_number, mail, created_at FROM booking.users
 		WHERE deleted_at IS NULL
 		ORDER BY id
 		LIMIT $1 OFFSET $2;
 	`
 
-	rows, err := r.Pool.Query(ctx, query, limit, offset)
+	rows, err := r.Pool.Query(ctx, queryGetUsers, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"select users: %w",
@@ -61,7 +61,7 @@ func (r *UsersRepository) GetUsers(
 		)
 	}
 
-	domains := DomainsFromModels(models)
+	users := DomainsFromModels(models)
 
-	return domains, nil
+	return users, nil
 }

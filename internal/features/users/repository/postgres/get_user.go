@@ -16,12 +16,12 @@ func (r *UsersRepository) GetUser(
 	ctx, cancel := context.WithTimeout(ctx, r.Pool.OpTimeout())
 	defer cancel()
 
-	query := `
+	queryGetUser := `
 		SELECT id, version, name, phone_number, mail, created_at FROM booking.users
 		WHERE id = $1 AND deleted_at IS NULL;
 	`
 
-	row := r.Pool.QueryRow(ctx, query, userID)
+	row := r.Pool.QueryRow(ctx, queryGetUser, userID)
 
 	var model UserModel
 
@@ -48,7 +48,7 @@ func (r *UsersRepository) GetUser(
 		)
 	}
 
-	userDomain := DomainFromModel(model)
+	user := DomainFromModel(model)
 
-	return userDomain, nil
+	return user, nil
 }

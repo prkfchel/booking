@@ -10,25 +10,25 @@ type UserResponseDTO struct {
 	Version     int
 	Name        string
 	PhoneNumber *string
-	Mail        *string
+	Email       *string
 	CreatedAt   time.Time
 }
 
-func UserDTOFromDomain(domain domain.User) UserResponseDTO {
+func DTOFromDomain(domain domain.User) UserResponseDTO {
 	return UserResponseDTO{
 		ID:          domain.ID,
 		Version:     domain.Version,
 		Name:        domain.Name,
 		PhoneNumber: domain.PhoneNumber,
-		Mail:        domain.Mail,
+		Email:       domain.Email,
 		CreatedAt:   domain.CreatedAt,
 	}
 }
 
-func UsersDTOFromDomains(domains []domain.User) []UserResponseDTO {
+func DTOsFromDomains(domains []domain.User) []UserResponseDTO {
 	response := make([]UserResponseDTO, len(domains))
 	for i, domain := range domains {
-		dto := UserDTOFromDomain(domain)
+		dto := DTOFromDomain(domain)
 		response[i] = dto
 	}
 

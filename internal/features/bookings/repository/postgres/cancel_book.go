@@ -3,21 +3,23 @@ package bookings_postgres_repository
 import (
 	"booking/internal/core/domain"
 	core_errors "booking/internal/core/errors"
+	core_postgres_pool "booking/internal/core/repository/postgres/pool"
 	"context"
+	"errors"
 	"fmt"
 	"time"
 )
 
 func (r *BookRepository) CancelBook(
 	ctx context.Context,
-	id int,
-) (domain.Book, error) {
+	bookID int,
+) (domain.Booking, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.Pool.OpTimeout())
 	defer cancel()
 
 	tx, err := r.Pool.Begin(ctx)
 	if err != nil {
-		return domain.Book{}, fmt.Errorf(
+		return domain.Booking{}, fmt.Errorf(
 			"failed to create transaction: %w",
 			err,
 		)
@@ -25,12 +27,13 @@ func (r *BookRepository) CancelBook(
 
 	defer tx.Rollback(ctx)
 
-	query1 := `
+	queryCheckCanceledBooking := `
 		SELECT canceled FROM booking.bookings
-		WHERE id = $1
+		WHERE id = $1 
+		FOR UPDATE;
 	`
 
-	row := tx.QueryRow(ctx, query1, id)
+	row := tx.QueryRow(ctx, queryCheckCanceledBooking, bookID)
 
 	var canceled bool
 
@@ -39,20 +42,28 @@ func (r *BookRepository) CancelBook(
 	)
 
 	if err != nil {
-		return domain.Book{}, fmt.Errorf(
+		if errors.Is(err, core_postgres_pool.ErrNoRows) {
+			return domain.Booking{}, fmt.Errorf(
+				"booking with id='%d': %w: %v",
+				bookID,
+				core_errors.ErrNotFound,
+				err,
+			)
+		}
+		return domain.Booking{}, fmt.Errorf(
 			"scan error: %w",
 			err,
 		)
 	}
 
 	if canceled {
-		return domain.Book{}, fmt.Errorf(
+		return domain.Booking{}, fmt.Errorf(
 			"book is already canceled: %w",
 			core_errors.ErrConflict,
 		)
 	}
 
-	query2 := `
+	queryCancelBooking := `
 		UPDATE booking.bookings
 		SET 
 			canceled = true,
@@ -67,7 +78,7 @@ func (r *BookRepository) CancelBook(
 			canceled_at;
 	`
 
-	row = tx.QueryRow(ctx, query2, time.Now(), id)
+	row = tx.QueryRow(ctx, queryCancelBooking, time.Now(), bookID)
 
 	var model BookModel
 
@@ -80,14 +91,15 @@ func (r *BookRepository) CancelBook(
 		&model.CanceledAt,
 	)
 	if err != nil {
-		return domain.Book{}, fmt.Errorf(
+		return domain.Booking{}, fmt.Errorf(
 			"scan error: %w",
+			err,
 		)
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return domain.Book{}, fmt.Errorf(
+		return domain.Booking{}, fmt.Errorf(
 			"commit cancel booking error: %w",
 			err,
 		)

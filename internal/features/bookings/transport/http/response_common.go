@@ -14,7 +14,7 @@ type BookResponseDTO struct {
 	CanceledAt *time.Time
 }
 
-func DTOFromDomain(domain domain.Book) BookResponseDTO {
+func DTOFromDomain(domain domain.Booking) BookResponseDTO {
 	return BookResponseDTO{
 		ID:         domain.ID,
 		EventID:    domain.EventID,
@@ -25,7 +25,7 @@ func DTOFromDomain(domain domain.Book) BookResponseDTO {
 	}
 }
 
-func DTOsFromDomains(domains []domain.Book) []BookResponseDTO {
+func DTOsFromDomains(domains []domain.Booking) []BookResponseDTO {
 	response := make([]BookResponseDTO, len(domains))
 
 	for i, domain := range domains {

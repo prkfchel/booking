@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-type getUsersResponse []UserResponseDTO
+type getUsersResponseDTO []UserResponseDTO
 
 func (h *UsersHTTPHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -29,7 +29,7 @@ func (h *UsersHTTPHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := getUsersResponse(UsersDTOFromDomains(users))
+	response := getUsersResponseDTO(DTOsFromDomains(users))
 
 	responseHandler.JSONResponse(http.StatusOK, response)
 }

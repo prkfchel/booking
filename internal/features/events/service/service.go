@@ -23,7 +23,7 @@ type EventsRepository interface {
 
 	GetEvent(
 		ctx context.Context,
-		id int,
+		eventID int,
 	) (domain.Event, error)
 
 	PatchEvent(
@@ -38,6 +38,6 @@ type EventsRepository interface {
 
 	CancelEvent(
 		ctx context.Context,
-		id int,
+		eventID int,
 	) (domain.Event, error)
 }

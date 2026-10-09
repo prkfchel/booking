@@ -11,12 +11,12 @@ import (
 
 func (r *EventsRepository) GetEvent(
 	ctx context.Context,
-	id int,
+	eventID int,
 ) (domain.Event, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.Pool.OpTimeout())
 	defer cancel()
 
-	query := `
+	queryGetEvent := `
 		SELECT id, 
 			version, 
 			title, 
@@ -31,7 +31,7 @@ func (r *EventsRepository) GetEvent(
 		WHERE id = $1;
 	`
 
-	row := r.Pool.QueryRow(ctx, query, id)
+	row := r.Pool.QueryRow(ctx, queryGetEvent, eventID)
 
 	var model EventModel
 
@@ -42,9 +42,9 @@ func (r *EventsRepository) GetEvent(
 		&model.Description,
 		&model.TotalTickets,
 		&model.CreatedAt,
-		&model.EventAddress,
-		&model.EventTime,
-		&model.OwnersUserId,
+		&model.Address,
+		&model.StartsAt,
+		&model.OwnerUserID,
 		&model.Canceled,
 		&model.CanceledAt,
 	)
@@ -53,7 +53,7 @@ func (r *EventsRepository) GetEvent(
 		if errors.Is(err, core_postgres_pool.ErrNoRows) {
 			return domain.Event{}, fmt.Errorf(
 				"event with id='%d' %w: %v",
-				id,
+				eventID,
 				core_errors.ErrNotFound,
 				err,
 			)
@@ -64,7 +64,7 @@ func (r *EventsRepository) GetEvent(
 		)
 	}
 
-	eventDomain := DomainFromModel(model)
+	event := DomainFromModel(model)
 
-	return eventDomain, nil
+	return event, nil
 }

@@ -8,13 +8,13 @@ import (
 
 func (s *BookService) GetBook(
 	ctx context.Context,
-	id int,
-) (domain.Book, error) {
-	book, err := s.Repository.GetBook(ctx, id)
+	bookID int,
+) (domain.Booking, error) {
+	book, err := s.Repository.GetBook(ctx, bookID)
 	if err != nil {
-		return domain.Book{}, fmt.Errorf(
+		return domain.Booking{}, fmt.Errorf(
 			"failed to get book with id='%d' from repository: %w",
-			id,
+			bookID,
 			err,
 		)
 	}

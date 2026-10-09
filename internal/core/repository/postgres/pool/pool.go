@@ -12,16 +12,7 @@ type Pool interface {
 	Close()
 	OpTimeout() time.Duration
 	Begin(ctx context.Context) (Tx, error)
-	BeginTx(ctx context.Context, txOptions TxOptions) (Tx, error)
 }
-
-type TxOptions struct {
-	IsoLevel   TxIsoLevel
-	AccessMode TxAccessMode
-}
-
-type TxIsoLevel string
-type TxAccessMode string
 
 type Tx interface {
 	Commit(ctx context.Context) error

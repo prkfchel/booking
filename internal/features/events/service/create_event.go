@@ -17,7 +17,7 @@ func (s *EventsService) CreateEvent(
 		)
 	}
 
-	eventDoamin, err := s.Repository.CreateEvent(ctx, event)
+	createdEvent, err := s.Repository.CreateEvent(ctx, event)
 	if err != nil {
 		return domain.Event{}, fmt.Errorf(
 			"failed to create event: %w",
@@ -25,5 +25,5 @@ func (s *EventsService) CreateEvent(
 		)
 	}
 
-	return eventDoamin, nil
+	return createdEvent, nil
 }

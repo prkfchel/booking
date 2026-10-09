@@ -13,12 +13,12 @@ type createEventRequestDTO struct {
 	Title        string    `json:"title" validate:"required,min=2,max=500"`
 	Description  *string   `json:"description" validate:"omitempty,min=2"`
 	TotalTickets int       `json:"total_tickets" validate:"required,min=1"`
-	EventAddress string    `json:"event_address" validate:"required,min=5"`
-	EventTime    time.Time `json:"event_time" validate:"required"`
-	OwnersUserId int       `json:"owners_user_id" validate:"required"`
+	Address      string    `json:"address" validate:"required,min=5"`
+	StartsAt     time.Time `json:"starts_at" validate:"required"`
+	OwnerUserID  int       `json:"owner_user_id" validate:"required"`
 }
 
-type createEventResponseDTO eventResponseDTO
+type createEventResponseDTO EventResponseDTO
 
 func (h *EventsHTTPHandler) CreaterEvent(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -31,26 +31,26 @@ func (h *EventsHTTPHandler) CreaterEvent(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	domain := DomainFromDTO(request)
+	event := DomainFromDTO(request)
 
-	eventDomain, err := h.Sevice.CreateEvent(ctx, domain)
+	createdEvent, err := h.Sevice.CreateEvent(ctx, event)
 	if err != nil {
 		responseHandler.ErrorResponse(err, "create event")
 		return
 	}
 
-	response := createEventResponseDTO(DTOFromDomain(eventDomain))
+	response := createEventResponseDTO(DTOFromDomain(createdEvent))
 
 	responseHandler.JSONResponse(http.StatusCreated, response)
 }
 
 func DomainFromDTO(dto createEventRequestDTO) domain.Event {
-	return domain.CreateUninitializedEvent(
+	return domain.NewUninitializedEvent(
 		dto.Title,
 		dto.Description,
 		dto.TotalTickets,
-		dto.EventAddress,
-		dto.EventTime,
-		dto.OwnersUserId,
+		dto.Address,
+		dto.StartsAt,
+		dto.OwnerUserID,
 	)
 }

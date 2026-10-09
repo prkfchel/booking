@@ -14,7 +14,7 @@ func (r *EventsRepository) GetEvents(
 	ctx, cancel := context.WithTimeout(ctx, r.Pool.OpTimeout())
 	defer cancel()
 
-	query := `
+	queryGetEvents := `
 		SELECT id, 
 			version, 
 			title, 
@@ -42,10 +42,10 @@ func (r *EventsRepository) GetEvents(
 		conditions = append(conditions, fmt.Sprintf("title = $%d", argsCount))
 		args = append(args, *filter.Title)
 	}
-	if filter.EventAddress != nil {
+	if filter.Address != nil {
 		argsCount++
 		conditions = append(conditions, fmt.Sprintf("event_address = $%d", argsCount))
-		args = append(args, *filter.EventAddress)
+		args = append(args, *filter.Address)
 	}
 	if filter.DateFrom != nil {
 		argsCount++
@@ -57,19 +57,19 @@ func (r *EventsRepository) GetEvents(
 		conditions = append(conditions, fmt.Sprintf("event_time < $%d", argsCount))
 		args = append(args, *filter.DateTo)
 	}
-	if filter.OwnersUserId != nil {
+	if filter.OwnerUserID != nil {
 		argsCount++
 		conditions = append(conditions, fmt.Sprintf("owners_user_id = $%d", argsCount))
-		args = append(args, *filter.OwnersUserId)
+		args = append(args, *filter.OwnerUserID)
 	}
 
 	where := ""
 	if len(conditions) > 0 {
 		where = "WHERE " + strings.Join(conditions, " AND ")
 	}
-	query = fmt.Sprintf(query, where)
+	queryGetEvents = fmt.Sprintf(queryGetEvents, where)
 
-	rows, err := r.Pool.Query(ctx, query, args...)
+	rows, err := r.Pool.Query(ctx, queryGetEvents, args...)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"select error: %w",
@@ -91,9 +91,9 @@ func (r *EventsRepository) GetEvents(
 			&model.Description,
 			&model.TotalTickets,
 			&model.CreatedAt,
-			&model.EventAddress,
-			&model.EventTime,
-			&model.OwnersUserId,
+			&model.Address,
+			&model.StartsAt,
+			&model.OwnerUserID,
 			&model.Canceled,
 			&model.CanceledAt,
 		)
@@ -115,7 +115,7 @@ func (r *EventsRepository) GetEvents(
 		)
 	}
 
-	domains := DomainsFromModels(models)
+	events := DomainsFromModels(models)
 
-	return domains, nil
+	return events, nil
 }

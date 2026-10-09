@@ -11,7 +11,7 @@ import (
 
 func (r *EventsRepository) CancelEvent(
 	ctx context.Context,
-	id int,
+	eventID int,
 ) (domain.Event, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.Pool.OpTimeout())
 	defer cancel()
@@ -25,13 +25,13 @@ func (r *EventsRepository) CancelEvent(
 	}
 	defer tx.Rollback(ctx)
 
-	query1 := `
+	queryEventCheck := `
 		SELECT canceled, event_time <= now() FROM booking.events
 		WHERE id = $1
 		FOR UPDATE;
 	`
 
-	row := tx.QueryRow(ctx, query1, id)
+	row := tx.QueryRow(ctx, queryEventCheck, eventID)
 
 	var canceled, passed bool
 
@@ -42,9 +42,10 @@ func (r *EventsRepository) CancelEvent(
 	if err != nil {
 		if errors.Is(err, core_postgres_pool.ErrNoRows) {
 			return domain.Event{}, fmt.Errorf(
-				"event with id='%d': %w",
-				id,
+				"event with id='%d': %w: %v",
+				eventID,
 				core_errors.ErrNotFound,
+				err,
 			)
 		}
 		return domain.Event{}, fmt.Errorf(
@@ -56,7 +57,7 @@ func (r *EventsRepository) CancelEvent(
 	if canceled {
 		return domain.Event{}, fmt.Errorf(
 			"event with id='%d' already canceled: %w",
-			id,
+			eventID,
 			core_errors.ErrConflict,
 		)
 	}
@@ -68,7 +69,7 @@ func (r *EventsRepository) CancelEvent(
 		)
 	}
 
-	query2 := `
+	queryCancelEvent := `
 		UPDATE booking.events
 		SET 
 			version = version + 1,
@@ -89,7 +90,7 @@ func (r *EventsRepository) CancelEvent(
 			canceled_at;
 	`
 
-	row = tx.QueryRow(ctx, query2, id)
+	row = tx.QueryRow(ctx, queryCancelEvent, eventID)
 
 	var model EventModel
 
@@ -100,9 +101,9 @@ func (r *EventsRepository) CancelEvent(
 		&model.Description,
 		&model.TotalTickets,
 		&model.CreatedAt,
-		&model.EventAddress,
-		&model.EventTime,
-		&model.OwnersUserId,
+		&model.Address,
+		&model.StartsAt,
+		&model.OwnerUserID,
 		&model.Canceled,
 		&model.CanceledAt,
 	)
@@ -113,7 +114,7 @@ func (r *EventsRepository) CancelEvent(
 		)
 	}
 
-	query3 := `
+	queryCancelEventsBookings := `
 		UPDATE booking.bookings b
 		SET 
 			canceled = TRUE,
@@ -121,7 +122,7 @@ func (r *EventsRepository) CancelEvent(
 		WHERE b.event_id = $1 AND b.canceled_at IS NULL;
 	`
 
-	if _, err := tx.Exec(ctx, query3, id); err != nil {
+	if _, err := tx.Exec(ctx, queryCancelEventsBookings, eventID); err != nil {
 		return domain.Event{}, fmt.Errorf(
 			"failed to cancel books: %w",
 			err,

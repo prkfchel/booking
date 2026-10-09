@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -91,21 +90,6 @@ func (p *Pool) Exec(
 
 func (p *Pool) Begin(ctx context.Context) (core_postgres_pool.Tx, error) {
 	tx, err := p.Pool.Begin(ctx)
-
-	if err != nil {
-		return &pgxTx{}, err
-	}
-
-	return &pgxTx{Tx: tx}, nil
-}
-
-func (p *Pool) BeginTx(ctx context.Context, txOptions core_postgres_pool.TxOptions) (core_postgres_pool.Tx, error) {
-	pgxTxOptions := pgx.TxOptions{
-		IsoLevel:   pgx.TxIsoLevel(txOptions.IsoLevel),
-		AccessMode: pgx.TxAccessMode(txOptions.AccessMode),
-	}
-
-	tx, err := p.Pool.BeginTx(ctx, pgxTxOptions)
 
 	if err != nil {
 		return &pgxTx{}, err

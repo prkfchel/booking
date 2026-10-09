@@ -13,19 +13,19 @@ func (h *UsersHTTPHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(ctx)
 	responseHandler := core_http_response.NewHTTPResponseWriter(log, w)
 
-	id, err := getUserIdPathValue(r)
+	id, err := getUserIDPathValue(r)
 	if err != nil {
 		responseHandler.ErrorResponse(err, "filed to get user id")
 		return
 	}
 
-	userDomain, err := h.Service.GetUser(ctx, id)
+	user, err := h.Service.GetUser(ctx, id)
 	if err != nil {
 		responseHandler.ErrorResponse(err, "get user")
 		return
 	}
 
-	response := getUserResponseDTO(UserDTOFromDomain(userDomain))
+	response := getUserResponseDTO(DTOFromDomain(user))
 
 	responseHandler.JSONResponse(http.StatusOK, response)
 }

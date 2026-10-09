@@ -11,12 +11,12 @@ import (
 
 func (r *BookRepository) GetBook(
 	ctx context.Context,
-	id int,
-) (domain.Book, error) {
+	bookID int,
+) (domain.Booking, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.Pool.OpTimeout())
 	defer cancel()
 
-	query := `
+	queryGetBook := `
 		SELECT 
 			id,
 			event_id,
@@ -28,7 +28,7 @@ func (r *BookRepository) GetBook(
 		WHERE id = $1;
 	`
 
-	row := r.Pool.QueryRow(ctx, query, id)
+	row := r.Pool.QueryRow(ctx, queryGetBook, bookID)
 
 	var model BookModel
 
@@ -43,21 +43,21 @@ func (r *BookRepository) GetBook(
 
 	if err != nil {
 		if errors.Is(err, core_postgres_pool.ErrNoRows) {
-			return domain.Book{}, fmt.Errorf(
+			return domain.Booking{}, fmt.Errorf(
 				"book with id='%d' %w: %w",
-				id,
+				bookID,
 				core_errors.ErrNotFound,
 				err,
 			)
 		}
 
-		return domain.Book{}, fmt.Errorf(
+		return domain.Booking{}, fmt.Errorf(
 			"scan error: %w",
 			err,
 		)
 	}
 
-	domain := domainFromModel(model)
+	book := domainFromModel(model)
 
-	return domain, nil
+	return book, nil
 }
