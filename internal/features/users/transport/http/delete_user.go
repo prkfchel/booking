@@ -11,7 +11,7 @@ func (h *UsersHTTPHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(ctx)
 	responseHandler := core_http_response.NewHTTPResponseWriter(log, w)
 
-	id, err := getUserIdPathValue(r)
+	id, err := getUserIDPathValue(r)
 	if err != nil {
 		responseHandler.ErrorResponse(err, "filed to get user id")
 		return

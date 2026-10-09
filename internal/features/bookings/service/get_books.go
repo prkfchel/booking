@@ -8,8 +8,8 @@ import (
 
 func (s *BookService) GetBooks(
 	ctx context.Context,
-	filter domain.BooksQueryFilter,
-) ([]domain.Book, error) {
+	filter domain.BookingsFilter,
+) ([]domain.Booking, error) {
 	if err := filter.Validate(); err != nil {
 		return nil, fmt.Errorf(
 			"validate filter error: %w",

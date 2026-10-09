@@ -20,7 +20,7 @@ func (s *UsersService) PatchUser(
 		)
 	}
 
-	err = user.AppyPatch(userPatch)
+	err = user.ApplyPatch(userPatch)
 	if err != nil {
 		return domain.User{}, fmt.Errorf(
 			"failed to apply patch: %w",

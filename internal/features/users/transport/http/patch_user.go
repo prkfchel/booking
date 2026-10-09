@@ -12,7 +12,7 @@ import (
 	"regexp"
 )
 
-type PatchUserRequest struct {
+type PatchUserRequestDTO struct {
 	Name        core_http_type.Nullable[string] `json:"name"`
 	PhoneNumber core_http_type.Nullable[string] `json:"phone_number"`
 	Mail        core_http_type.Nullable[string] `json:"mail"`
@@ -25,13 +25,13 @@ func (h *UsersHTTPHandler) PatchUser(w http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(ctx)
 	responseHandler := core_http_response.NewHTTPResponseWriter(log, w)
 
-	id, err := getUserIdPathValue(r)
+	id, err := getUserIDPathValue(r)
 	if err != nil {
 		responseHandler.ErrorResponse(err, "get id from path value")
 		return
 	}
 
-	var request PatchUserRequest
+	var request PatchUserRequestDTO
 	if err := core_http_request.DecodeAndValidateRequest(r, &request); err != nil {
 		responseHandler.ErrorResponse(
 			err,
@@ -40,20 +40,20 @@ func (h *UsersHTTPHandler) PatchUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userPatch := PatchUserDomainFromDTO(request)
+	userPatch := userPatchDomainFromDTO(request)
 
-	UserDomain, err := h.Service.PatchUser(ctx, id, userPatch)
+	user, err := h.Service.PatchUser(ctx, id, userPatch)
 	if err != nil {
 		responseHandler.ErrorResponse(err, "failed to patch user")
 		return
 	}
 
-	response := PatchUserResponseDTO(UserDTOFromDomain(UserDomain))
+	response := PatchUserResponseDTO(DTOFromDomain(user))
 
 	responseHandler.JSONResponse(http.StatusOK, response)
 }
 
-func PatchUserDomainFromDTO(request PatchUserRequest) domain.PatchUser {
+func userPatchDomainFromDTO(request PatchUserRequestDTO) domain.PatchUser {
 	return domain.NewPatchUser(
 		request.Name.ToDomain(),
 		request.PhoneNumber.ToDomain(),
@@ -61,7 +61,7 @@ func PatchUserDomainFromDTO(request PatchUserRequest) domain.PatchUser {
 	)
 }
 
-func (r *PatchUserRequest) Validate() error {
+func (r *PatchUserRequestDTO) Validate() error {
 	if r.Name.Set {
 		if r.Name.Value == nil {
 			return fmt.Errorf(

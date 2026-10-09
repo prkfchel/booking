@@ -9,12 +9,12 @@ import (
 	"net/http"
 )
 
-type GetEventsReaponseDTO []eventResponseDTO
-
 type getEventsRequestDTO struct {
 	Title   *string `json:"title"`
 	Address *string `json:"address"`
 }
+
+type getEventsResponseDTO []EventResponseDTO
 
 func (h *EventsHTTPHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -40,7 +40,7 @@ func (h *EventsHTTPHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := GetEventsReaponseDTO(DTOFromDomains(events))
+	response := getEventsResponseDTO(DTOFromDomains(events))
 
 	responseHandler.JSONResponse(http.StatusOK, response)
 }
@@ -51,25 +51,15 @@ func GetEventsFilter(r *http.Request, request getEventsRequestDTO) (
 ) {
 
 	const (
-		limitQueryParamKey    = "limit"
-		offsetQueryParamKey   = "offset"
 		dateFromQueryParamKey = "dateFrom"
 		dateToQueryParamKey   = "dateTo"
 		ownersIdQueryParamKey = "ownersId"
 	)
 
-	limit, err := core_http_request.GetIntQueryParams(r, limitQueryParamKey)
+	limit, offset, err := getLimitOffsetQueryParams(r)
 	if err != nil {
 		return domain.EventsFilter{}, fmt.Errorf(
-			"failed to get limit query param: %w",
-			err,
-		)
-	}
-
-	offset, err := core_http_request.GetIntQueryParams(r, offsetQueryParamKey)
-	if err != nil {
-		return domain.EventsFilter{}, fmt.Errorf(
-			"failed to get offset query param: %w",
+			"failed to get limit/offset query params: %w",
 			err,
 		)
 	}
@@ -98,7 +88,7 @@ func GetEventsFilter(r *http.Request, request getEventsRequestDTO) (
 		)
 	}
 
-	filter := domain.NewEventsQueryFilter(
+	filter := domain.NewEventsFilter(
 		request.Title,
 		request.Address,
 		dateFrom,

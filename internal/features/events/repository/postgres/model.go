@@ -12,9 +12,9 @@ type EventModel struct {
 	Description  *string
 	TotalTickets int
 	CreatedAt    time.Time
-	EventAddress string
-	EventTime    time.Time
-	OwnersUserId int
+	Address      string
+	StartsAt     time.Time
+	OwnerUserID  int
 	Canceled     bool
 	CanceledAt   *time.Time
 }
@@ -27,9 +27,9 @@ func DomainFromModel(model EventModel) domain.Event {
 		model.Description,
 		model.TotalTickets,
 		model.CreatedAt,
-		model.EventAddress,
-		model.EventTime,
-		model.OwnersUserId,
+		model.Address,
+		model.StartsAt,
+		model.OwnerUserID,
 		model.Canceled,
 		model.CanceledAt,
 	)

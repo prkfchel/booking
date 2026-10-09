@@ -13,7 +13,7 @@ func (h *BookHTTPHandler) GetBook(w http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(ctx)
 	responseHandler := core_http_response.NewHTTPResponseWriter(log, w)
 
-	id, err := getBookIdPathValue(r)
+	id, err := getBookIDPathValue(r)
 	if err != nil {
 		responseHandler.ErrorResponse(err, "failed to get book  id")
 		return

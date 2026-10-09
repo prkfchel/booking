@@ -14,8 +14,8 @@ type BookModel struct {
 	CanceledAt *time.Time
 }
 
-func domainFromModel(model BookModel) domain.Book {
-	return domain.NewBook(
+func domainFromModel(model BookModel) domain.Booking {
+	return domain.NewBooking(
 		model.ID,
 		model.EventID,
 		model.UserID,
@@ -25,8 +25,8 @@ func domainFromModel(model BookModel) domain.Book {
 	)
 }
 
-func domainsFromModels(models []BookModel) []domain.Book {
-	domains := make([]domain.Book, len(models))
+func domainsFromModels(models []BookModel) []domain.Booking {
+	domains := make([]domain.Booking, len(models))
 
 	for i, model := range models {
 		domains[i] = domainFromModel(model)

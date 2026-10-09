@@ -1,9 +1,17 @@
 package domain
 
 import (
-	core_errors "booking/internal/core/errors"
 	"fmt"
 	"time"
+
+	coreerrors "booking/internal/core/errors"
+)
+
+const (
+	eventTitleMinLen       = 2
+	eventTitleMaxLen       = 500
+	eventDescriptionMinLen = 2
+	eventAddressMinLen     = 5
 )
 
 type Event struct {
@@ -13,9 +21,9 @@ type Event struct {
 	Description  *string
 	TotalTickets int
 	CreatedAt    time.Time
-	EventAddress string
-	EventTime    time.Time
-	OwnersUserId int
+	Address      string
+	StartsAt     time.Time
+	OwnerUserID  int
 	Canceled     bool
 	CanceledAt   *time.Time
 }
@@ -27,9 +35,9 @@ func NewEvent(
 	description *string,
 	totalTickets int,
 	createdAt time.Time,
-	eventAddress string,
-	eventTime time.Time,
-	ownersUserId int,
+	address string,
+	startsAt time.Time,
+	ownerUserID int,
 	canceled bool,
 	canceledAt *time.Time,
 ) Event {
@@ -40,21 +48,21 @@ func NewEvent(
 		Description:  description,
 		TotalTickets: totalTickets,
 		CreatedAt:    createdAt,
-		EventAddress: eventAddress,
-		EventTime:    eventTime,
-		OwnersUserId: ownersUserId,
+		Address:      address,
+		StartsAt:     startsAt,
+		OwnerUserID:  ownerUserID,
 		Canceled:     canceled,
 		CanceledAt:   canceledAt,
 	}
 }
 
-func CreateUninitializedEvent(
+func NewUninitializedEvent(
 	title string,
 	description *string,
 	totalTickets int,
-	eventAddress string,
-	eventTime time.Time,
-	ownersUserId int,
+	address string,
+	startsAt time.Time,
+	ownerUserID int,
 ) Event {
 	return NewEvent(
 		UninitializedID,
@@ -63,9 +71,9 @@ func CreateUninitializedEvent(
 		description,
 		totalTickets,
 		UninitializedCreatedAt,
-		eventAddress,
-		eventTime,
-		ownersUserId,
+		address,
+		startsAt,
+		ownerUserID,
 		UninitializedCanceled,
 		UninitializedCanceledAt,
 	)
@@ -73,22 +81,24 @@ func CreateUninitializedEvent(
 
 func (e *Event) Validate() error {
 	titleLen := len([]rune(e.Title))
-
-	if titleLen < 2 || titleLen > 500 {
+	if titleLen < eventTitleMinLen || titleLen > eventTitleMaxLen {
 		return fmt.Errorf(
-			"title len must be between 2 and 500: %d: %w",
+			"title len must be between %d and %d: %d: %w",
+			eventTitleMinLen,
+			eventTitleMaxLen,
 			titleLen,
-			core_errors.ErrInvalidArgument,
+			coreerrors.ErrInvalidArgument,
 		)
 	}
 
 	if e.Description != nil {
 		descriptionLen := len([]rune(*e.Description))
-		if descriptionLen < 2 {
+		if descriptionLen < eventDescriptionMinLen {
 			return fmt.Errorf(
-				"description len must be more then 2: %d: %w",
+				"description len must be at least %d: %d: %w",
+				eventDescriptionMinLen,
 				descriptionLen,
-				core_errors.ErrInvalidArgument,
+				coreerrors.ErrInvalidArgument,
 			)
 		}
 	}
@@ -97,32 +107,32 @@ func (e *Event) Validate() error {
 		return fmt.Errorf(
 			"total tickets must be positive number: %d: %w",
 			e.TotalTickets,
-			core_errors.ErrInvalidArgument,
+			coreerrors.ErrInvalidArgument,
 		)
 	}
 
-	eventAddresLen := len([]rune(e.EventAddress))
-
-	if eventAddresLen < 5 {
+	addressLen := len([]rune(e.Address))
+	if addressLen < eventAddressMinLen {
 		return fmt.Errorf(
-			"event address len must be more then 5: %d: %w",
-			eventAddresLen,
-			core_errors.ErrInvalidArgument,
+			"address len must be at least %d: %d: %w",
+			eventAddressMinLen,
+			addressLen,
+			coreerrors.ErrInvalidArgument,
 		)
 	}
 
-	if e.EventTime.IsZero() {
+	if e.StartsAt.IsZero() {
 		return fmt.Errorf(
-			"evet time must be: %w",
-			core_errors.ErrInvalidArgument,
+			"event start time must be set: %w",
+			coreerrors.ErrInvalidArgument,
 		)
 	}
 
-	if e.OwnersUserId < 1 {
+	if e.OwnerUserID < 1 {
 		return fmt.Errorf(
-			"owners user id must be positive number: %d, %w",
-			e.OwnersUserId,
-			core_errors.ErrInvalidArgument,
+			"owner user id must be positive number: %d: %w",
+			e.OwnerUserID,
+			coreerrors.ErrInvalidArgument,
 		)
 	}
 
@@ -133,68 +143,64 @@ type PatchEvent struct {
 	Title        Nullable[string]
 	Description  Nullable[string]
 	TotalTickets Nullable[int]
-	EventAddress Nullable[string]
-	EventTime    Nullable[time.Time]
+	Address      Nullable[string]
+	StartsAt     Nullable[time.Time]
 }
 
 func NewPatchEvent(
 	title Nullable[string],
 	description Nullable[string],
 	totalTickets Nullable[int],
-	eventAddress Nullable[string],
-	eventTime Nullable[time.Time],
+	address Nullable[string],
+	startsAt Nullable[time.Time],
 ) PatchEvent {
 	return PatchEvent{
 		Title:        title,
 		Description:  description,
 		TotalTickets: totalTickets,
-		EventAddress: eventAddress,
-		EventTime:    eventTime,
+		Address:      address,
+		StartsAt:     startsAt,
 	}
 }
 
-func (patch PatchEvent) Validate() error {
-	if patch.Title.Set && patch.Title.Value == nil {
+func (p PatchEvent) Validate() error {
+	if p.Title.Set && p.Title.Value == nil {
 		return fmt.Errorf(
-			"title cant be set and null: %w",
-			core_errors.ErrInvalidArgument,
+			"title can't be set and null: %w",
+			coreerrors.ErrInvalidArgument,
 		)
 	}
 
-	if patch.TotalTickets.Set && patch.TotalTickets.Value == nil {
+	if p.TotalTickets.Set && p.TotalTickets.Value == nil {
 		return fmt.Errorf(
-			"total tickets cant be set and null: %w",
-			core_errors.ErrInvalidArgument,
+			"total tickets can't be set and null: %w",
+			coreerrors.ErrInvalidArgument,
 		)
 	}
 
-	if patch.EventAddress.Set && patch.EventAddress.Value == nil {
+	if p.Address.Set && p.Address.Value == nil {
 		return fmt.Errorf(
-			"event address tickets cant be set and null: %w",
-			core_errors.ErrInvalidArgument,
+			"address can't be set and null: %w",
+			coreerrors.ErrInvalidArgument,
 		)
 	}
 
-	if patch.EventTime.Set && patch.EventTime.Value == nil {
+	if p.StartsAt.Set && p.StartsAt.Value == nil {
 		return fmt.Errorf(
-			"event time tickets cant be set and null: %w",
-			core_errors.ErrInvalidArgument,
+			"start time can't be set and null: %w",
+			coreerrors.ErrInvalidArgument,
 		)
 	}
 
 	return nil
 }
 
-func (event *Event) ApplyPatch(patch PatchEvent) error {
-	err := patch.Validate()
-	if err != nil {
-		return fmt.Errorf(
-			"failed to validate patch: %w",
-			err,
-		)
+func (e *Event) ApplyPatch(patch PatchEvent) error {
+	if err := patch.Validate(); err != nil {
+		return fmt.Errorf("failed to validate patch: %w", err)
 	}
 
-	tmp := *event
+	tmp := *e
 
 	if patch.Title.Set {
 		tmp.Title = *patch.Title.Value
@@ -208,104 +214,64 @@ func (event *Event) ApplyPatch(patch PatchEvent) error {
 		tmp.TotalTickets = *patch.TotalTickets.Value
 	}
 
-	if patch.EventAddress.Set {
-		tmp.EventAddress = *patch.EventAddress.Value
+	if patch.Address.Set {
+		tmp.Address = *patch.Address.Value
 	}
 
-	if patch.EventTime.Set {
-		tmp.EventTime = *patch.EventTime.Value
+	if patch.StartsAt.Set {
+		tmp.StartsAt = *patch.StartsAt.Value
 	}
 
 	if err := tmp.Validate(); err != nil {
-		return fmt.Errorf(
-			"failed to validate applied patch: %w",
-			err,
-		)
+		return fmt.Errorf("failed to validate applied patch: %w", err)
 	}
 
-	event.Title = tmp.Title
-	event.Description = tmp.Description
-	event.TotalTickets = tmp.TotalTickets
-	event.EventAddress = tmp.EventAddress
-	event.EventTime = tmp.EventTime
-	event.Canceled = tmp.Canceled
+	e.Title = tmp.Title
+	e.Description = tmp.Description
+	e.TotalTickets = tmp.TotalTickets
+	e.Address = tmp.Address
+	e.StartsAt = tmp.StartsAt
 
 	return nil
 }
 
 type EventsFilter struct {
-	Title        *string
-	EventAddress *string
-	DateFrom     *time.Time
-	DateTo       *time.Time
-	OwnersUserId *int
-	Limit        *int
-	Offset       *int
+	Pagination
+
+	Title       *string
+	Address     *string
+	DateFrom    *time.Time
+	DateTo      *time.Time
+	OwnerUserID *int
 }
 
-func NewEventsQueryFilter(
+func NewEventsFilter(
 	title *string,
-	eventAddress *string,
+	address *string,
 	dateFrom *time.Time,
 	dateTo *time.Time,
-	ownersUserId *int,
+	ownerUserID *int,
 	limit *int,
 	offset *int,
 ) EventsFilter {
 	return EventsFilter{
-		Title:        title,
-		EventAddress: eventAddress,
-		DateFrom:     dateFrom,
-		DateTo:       dateTo,
-		OwnersUserId: ownersUserId,
-		Limit:        limit,
-		Offset:       offset,
+		Pagination:  NewPagination(limit, offset),
+		Title:       title,
+		Address:     address,
+		DateFrom:    dateFrom,
+		DateTo:      dateTo,
+		OwnerUserID: ownerUserID,
 	}
 }
 
-func (filter EventsFilter) Validate() error {
-	if filter.Limit != nil {
-		if *filter.Limit < 1 {
-			return fmt.Errorf(
-				"limit must be positive: %d: %w",
-				*filter.Limit,
-				core_errors.ErrInvalidArgument,
-			)
-		}
+func (f EventsFilter) Validate() error {
+	if err := f.Pagination.Validate(); err != nil {
+		return err
 	}
 
-	if filter.Offset != nil {
-		if *filter.Offset < 1 {
-			return fmt.Errorf(
-				"offset must be positive: %d: %w",
-				*filter.Offset,
-				core_errors.ErrInvalidArgument,
-			)
-		}
+	if err := validateOptionalID("owner user id", f.OwnerUserID); err != nil {
+		return err
 	}
 
-	if filter.OwnersUserId != nil {
-		if *filter.OwnersUserId < 0 {
-			return fmt.Errorf(
-				"owners user id must be positive: %d: %w",
-				*filter.OwnersUserId,
-				core_errors.ErrInvalidArgument,
-			)
-		}
-	}
-
-	if filter.DateFrom != nil && filter.DateTo != nil {
-		dateFrom := *filter.DateFrom
-		dateTo := *filter.DateTo
-		if !dateFrom.Before(dateTo) {
-			return fmt.Errorf(
-				"dateFrom='%d' must be bofare dateTo='%d': %w",
-				dateFrom,
-				dateTo,
-				core_errors.ErrInvalidArgument,
-			)
-		}
-	}
-
-	return nil
+	return validateDateRange(f.DateFrom, f.DateTo)
 }

@@ -17,7 +17,7 @@ func (r *EventsRepository) PatchEvent(
 	ctx, cancel := context.WithTimeout(ctx, r.Pool.OpTimeout())
 	defer cancel()
 
-	query := `
+	queryPatchEvent := `
 		UPDATE booking.events
 		SET 
 			version = version + 1,
@@ -45,25 +45,25 @@ func (r *EventsRepository) PatchEvent(
 		event.Title,
 		event.Description,
 		event.TotalTickets,
-		event.EventAddress,
-		event.EventTime,
+		event.Address,
+		event.StartsAt,
 		event.ID,
 		event.Version,
 	}
 
 	if event.Canceled {
-		query = fmt.Sprintf(
-			query,
+		queryPatchEvent = fmt.Sprintf(
+			queryPatchEvent,
 			", canceled = $8, canceled_at = $9",
 		)
 		args = append(args, event.Canceled, time.Now())
 	} else {
-		query = fmt.Sprintf(query, "")
+		queryPatchEvent = fmt.Sprintf(queryPatchEvent, "")
 	}
 
 	row := r.Pool.QueryRow(
 		ctx,
-		query,
+		queryPatchEvent,
 		args...,
 	)
 
@@ -75,9 +75,9 @@ func (r *EventsRepository) PatchEvent(
 		&model.Description,
 		&model.TotalTickets,
 		&model.CreatedAt,
-		&model.EventAddress,
-		&model.EventTime,
-		&model.OwnersUserId,
+		&model.Address,
+		&model.StartsAt,
+		&model.OwnerUserID,
 		&model.Canceled,
 		&model.CanceledAt,
 	)
@@ -97,7 +97,7 @@ func (r *EventsRepository) PatchEvent(
 		)
 	}
 
-	eventDomain := DomainFromModel(model)
+	patchedEvent := DomainFromModel(model)
 
-	return eventDomain, nil
+	return patchedEvent, nil
 }

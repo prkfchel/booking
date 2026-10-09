@@ -17,7 +17,7 @@ func (r *EventsRepository) CreateEvent(
 	ctx, cancel := context.WithTimeout(ctx, r.Pool.OpTimeout())
 	defer cancel()
 
-	query := `
+	queryCreateEvent := `
 		INSERT INTO booking.events (
 			title, 
 			description, 
@@ -43,13 +43,13 @@ func (r *EventsRepository) CreateEvent(
 	`
 	row := r.Pool.QueryRow(
 		ctx,
-		query,
+		queryCreateEvent,
 		event.Title,
 		event.Description,
 		event.TotalTickets,
-		event.EventAddress,
-		event.EventTime,
-		event.OwnersUserId,
+		event.Address,
+		event.StartsAt,
+		event.OwnerUserID,
 		time.Now(),
 	)
 
@@ -62,9 +62,9 @@ func (r *EventsRepository) CreateEvent(
 		&model.Description,
 		&model.TotalTickets,
 		&model.CreatedAt,
-		&model.EventAddress,
-		&model.EventTime,
-		&model.OwnersUserId,
+		&model.Address,
+		&model.StartsAt,
+		&model.OwnerUserID,
 		&model.Canceled,
 		&model.CanceledAt,
 	)
@@ -83,8 +83,8 @@ func (r *EventsRepository) CreateEvent(
 		)
 	}
 
-	eventDomain := DomainFromModel(model)
+	createdEvent := DomainFromModel(model)
 
-	return eventDomain, nil
+	return createdEvent, nil
 
 }

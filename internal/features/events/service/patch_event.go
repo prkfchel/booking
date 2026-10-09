@@ -23,7 +23,7 @@ func (s *EventsService) PatchEvent(
 
 	if event.Canceled {
 		return domain.Event{}, fmt.Errorf(
-			"imposible to patch canceled evet: %w",
+			"imposible to patch canceled event: %w",
 			core_errors.ErrInvalidArgument,
 		)
 	}

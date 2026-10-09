@@ -16,7 +16,7 @@ func (r *UsersRepository) PatchUser(
 	ctx, cancel := context.WithTimeout(ctx, r.Pool.OpTimeout())
 	defer cancel()
 
-	query := `
+	queryPatchUser := `
 		UPDATE booking.users 
 		SET version = version + 1,
 			name = $1,
@@ -26,7 +26,7 @@ func (r *UsersRepository) PatchUser(
 		RETURNING id, version, name, phone_number, mail, created_at;
 	`
 
-	row := r.Pool.QueryRow(ctx, query, user.Name, user.PhoneNumber, user.Mail, user.ID, user.Version)
+	row := r.Pool.QueryRow(ctx, queryPatchUser, user.Name, user.PhoneNumber, user.Email, user.ID, user.Version)
 
 	var model UserModel
 
@@ -41,19 +41,19 @@ func (r *UsersRepository) PatchUser(
 	if err != nil {
 		if errors.Is(core_postgres_pool.ErrNoRows, err) {
 			return domain.User{}, fmt.Errorf(
-				"user with id='%d' concurrently accessed: %w",
+				"user with id='%d': %w: %v",
 				user.ID,
 				core_errors.ErrConflict,
+				err,
 			)
 		}
-
 		return domain.User{}, fmt.Errorf(
 			"scan error: %w",
 			err,
 		)
 	}
 
-	patchedUserDomain := DomainFromModel(model)
+	patchedUser := DomainFromModel(model)
 
-	return patchedUserDomain, nil
+	return patchedUser, nil
 }

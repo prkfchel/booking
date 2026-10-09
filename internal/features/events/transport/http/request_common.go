@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func GetLimitOffsetQueryParams(r *http.Request) (*int, *int, error) {
+func getLimitOffsetQueryParams(r *http.Request) (*int, *int, error) {
 
 	const (
 		limitQueryParamKey  = "limit"
@@ -48,7 +48,7 @@ func GetLimitOffsetQueryParams(r *http.Request) (*int, *int, error) {
 
 }
 
-func getEventIdPathValue(r *http.Request) (int, error) {
+func getEventIDPathValue(r *http.Request) (int, error) {
 	const eventIdPathValueKey = "id"
 
 	id, err := core_http_request.GetIntPathValuese(r, eventIdPathValueKey)

@@ -8,9 +8,9 @@ import (
 
 func (s *EventsService) CancelEvent(
 	ctx context.Context,
-	id int,
+	eventID int,
 ) (domain.Event, error) {
-	event, err := s.Repository.CancelEvent(ctx, id)
+	event, err := s.Repository.CancelEvent(ctx, eventID)
 	if err != nil {
 		return domain.Event{}, fmt.Errorf(
 			"failed to cancel event in repository: %w",

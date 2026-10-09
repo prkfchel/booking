@@ -14,13 +14,13 @@ func (r *UsersRepository) CreateUser(
 	ctx, cancel := context.WithTimeout(ctx, r.Pool.OpTimeout())
 	defer cancel()
 
-	query := `
+	queryCreateUser := `
 		INSERT INTO booking.users (name, phone_number, mail, created_at)
 		VALUES ($1, $2, $3, $4)
 		RETURNING id, version, name, phone_number, mail, created_at;
 	`
 
-	row := r.Pool.QueryRow(ctx, query, user.Name, user.PhoneNumber, user.Mail, time.Now())
+	row := r.Pool.QueryRow(ctx, queryCreateUser, user.Name, user.PhoneNumber, user.Email, time.Now())
 
 	var model UserModel
 
@@ -36,7 +36,7 @@ func (r *UsersRepository) CreateUser(
 		return domain.User{}, fmt.Errorf("scan error: %w", err)
 	}
 
-	userDomain := DomainFromModel(model)
+	createdUser := DomainFromModel(model)
 
-	return userDomain, nil
+	return createdUser, nil
 }

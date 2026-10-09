@@ -18,21 +18,21 @@ func NewBookService(r BookRepository) *BookService {
 type BookRepository interface {
 	CreateBook(
 		ctx context.Context,
-		book domain.Book,
-	) (domain.Book, error)
+		book domain.Booking,
+	) (domain.Booking, error)
 
 	GetBook(
 		ctx context.Context,
-		id int,
-	) (domain.Book, error)
+		bookID int,
+	) (domain.Booking, error)
 
 	GetBooks(
 		ctx context.Context,
-		filter domain.BooksQueryFilter,
-	) ([]domain.Book, error)
+		filter domain.BookingsFilter,
+	) ([]domain.Booking, error)
 
 	CancelBook(
 		ctx context.Context,
-		id int,
-	) (domain.Book, error)
+		bookID int,
+	) (domain.Booking, error)
 }

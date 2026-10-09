@@ -9,12 +9,12 @@ import (
 
 func (r *BookRepository) GetBooks(
 	ctx context.Context,
-	filter domain.BooksQueryFilter,
-) ([]domain.Book, error) {
+	filter domain.BookingsFilter,
+) ([]domain.Booking, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.Pool.OpTimeout())
 	defer cancel()
 
-	query := `
+	queryGetBookings := `
 		SELECT 
 			id,
 			event_id,
@@ -33,14 +33,14 @@ func (r *BookRepository) GetBooks(
 	conditions := []string{}
 	argsCount := 2
 
-	if filter.EventId != nil {
-		args = append(args, filter.EventId)
+	if filter.UserID != nil {
+		args = append(args, filter.UserID)
 		argsCount++
 		conditions = append(conditions, fmt.Sprintf("event_id = $%d", argsCount))
 	}
 
-	if filter.UserId != nil {
-		args = append(args, filter.UserId)
+	if filter.UserID != nil {
+		args = append(args, filter.UserID)
 		argsCount++
 		conditions = append(conditions, fmt.Sprintf("user_id = $%d", argsCount))
 	}
@@ -62,9 +62,9 @@ func (r *BookRepository) GetBooks(
 		where = "WHERE " + strings.Join(conditions, " AND ")
 	}
 
-	query = fmt.Sprintf(query, where)
+	queryGetBookings = fmt.Sprintf(queryGetBookings, where)
 
-	rows, err := r.Pool.Query(ctx, query, args...)
+	rows, err := r.Pool.Query(ctx, queryGetBookings, args...)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"select error: %w",
@@ -104,8 +104,8 @@ func (r *BookRepository) GetBooks(
 		)
 	}
 
-	domains := domainsFromModels(models)
+	books := domainsFromModels(models)
 
-	return domains, nil
+	return books, nil
 
 }

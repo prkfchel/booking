@@ -12,58 +12,58 @@ import (
 	"time"
 )
 
-type requestPatchEvent struct {
+type patchEventRequestDTO struct {
 	Title        core_http_type.Nullable[string]    `json:"title"`
 	Description  core_http_type.Nullable[string]    `json:"description"`
 	TotalTickets core_http_type.Nullable[int]       `json:"total_tickets"`
-	EventAddress core_http_type.Nullable[string]    `json:"event_address"`
-	EventTime    core_http_type.Nullable[time.Time] `json:"event_time"`
+	Address      core_http_type.Nullable[string]    `json:"address"`
+	StartsAt     core_http_type.Nullable[time.Time] `json:"starts_at"`
 }
 
-type patchEventResponseDTO eventResponseDTO
+type patchEventResponseDTO EventResponseDTO
 
 func (h *EventsHTTPHandler) PatchEvent(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)
 	responseHandler := core_http_response.NewHTTPResponseWriter(log, w)
 
-	id, err := getEventIdPathValue(r)
+	id, err := getEventIDPathValue(r)
 	if err != nil {
 		responseHandler.ErrorResponse(err, "failed to get event id path value")
 		return
 	}
 
-	var request requestPatchEvent
+	var request patchEventRequestDTO
 	if err := core_http_request.DecodeAndValidateRequest(r, &request); err != nil {
 		responseHandler.ErrorResponse(err, "failed to decode and validate")
 		return
 	}
 
-	patchDomain := PatchEventDoaminFromDTO(request)
+	eventPatch := PatchEventDoaminFromDTO(request)
 
-	eventDomain, err := h.Sevice.PatchEvent(ctx, id, patchDomain)
+	event, err := h.Sevice.PatchEvent(ctx, id, eventPatch)
 	if err != nil {
 		responseHandler.ErrorResponse(err, "failed to patch event")
 		return
 	}
 
-	response := patchEventResponseDTO(DTOFromDomain(eventDomain))
+	response := patchEventResponseDTO(DTOFromDomain(event))
 
 	responseHandler.JSONResponse(http.StatusOK, response)
 
 }
 
-func PatchEventDoaminFromDTO(request requestPatchEvent) domain.PatchEvent {
+func PatchEventDoaminFromDTO(request patchEventRequestDTO) domain.PatchEvent {
 	return domain.NewPatchEvent(
 		request.Title.ToDomain(),
 		request.Description.ToDomain(),
 		request.TotalTickets.ToDomain(),
-		request.EventAddress.ToDomain(),
-		request.EventTime.ToDomain(),
+		request.Address.ToDomain(),
+		request.StartsAt.ToDomain(),
 	)
 }
 
-func (request *requestPatchEvent) Validate() error {
+func (request *patchEventRequestDTO) Validate() error {
 	if request.Title.Set {
 		titleLen := len([]rune(*request.Title.Value))
 
@@ -99,8 +99,8 @@ func (request *requestPatchEvent) Validate() error {
 		}
 	}
 
-	if request.EventAddress.Set {
-		eventAddresLen := len([]rune(*request.EventAddress.Value))
+	if request.Address.Set {
+		eventAddresLen := len([]rune(*request.Address.Value))
 
 		if eventAddresLen < 5 {
 			return fmt.Errorf(
@@ -111,8 +111,8 @@ func (request *requestPatchEvent) Validate() error {
 		}
 	}
 
-	if request.EventTime.Set {
-		if request.EventTime.Value.IsZero() {
+	if request.StartsAt.Set {
+		if request.StartsAt.Value.IsZero() {
 			return fmt.Errorf(
 				"evet time must be: %w",
 				core_errors.ErrInvalidArgument,

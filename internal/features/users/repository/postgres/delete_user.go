@@ -23,7 +23,7 @@ func (r *UsersRepository) DeleteUser(
 
 	defer tx.Rollback(ctx)
 
-	query1 := `
+	queryAnonymizeUser := `
 		UPDATE booking.users
 		SET 
 			version = version + 1,
@@ -34,7 +34,7 @@ func (r *UsersRepository) DeleteUser(
 		WHERE id = $1 AND deleted_at IS NULL;
 	`
 
-	cmdTag, err := tx.Exec(ctx, query1, userID)
+	cmdTag, err := tx.Exec(ctx, queryAnonymizeUser, userID)
 	if err != nil {
 		return fmt.Errorf(
 			"failed to delete user: %w",
@@ -50,23 +50,23 @@ func (r *UsersRepository) DeleteUser(
 		)
 	}
 
-	query2 := `
+	queryCancelEvent := `
 		UPDATE booking.events
 		SET 
 			version = version + 1,
 			canceled = TRUE,
 			canceled_at = now()
-		WHERE owners_user_id = $1 AND canceled_at IS NULL;
+		WHERE owners_user_id = $1 AND canceled_at IS NULL AND event_time > now();
 	`
 
-	if _, err = tx.Exec(ctx, query2, userID); err != nil {
+	if _, err = tx.Exec(ctx, queryCancelEvent, userID); err != nil {
 		return fmt.Errorf(
 			"failed to cancel events: %w",
 			err,
 		)
 	}
 
-	query3 := `
+	queryCancelEventsBookings := `
 		UPDATE booking.bookings b
 		SET 
 			canceled = TRUE,
@@ -77,14 +77,14 @@ func (r *UsersRepository) DeleteUser(
 			AND b.canceled_at IS NULL;
 	`
 
-	if _, err = tx.Exec(ctx, query3, userID); err != nil {
+	if _, err = tx.Exec(ctx, queryCancelEventsBookings, userID); err != nil {
 		return fmt.Errorf(
 			"failed to cancel books: %w",
 			err,
 		)
 	}
 
-	query4 := `
+	queryCancelUsersBookings := `
 		UPDATE booking.bookings b
 		SET 
 			canceled = TRUE,
@@ -92,7 +92,7 @@ func (r *UsersRepository) DeleteUser(
 		WHERE b.user_id = $1 AND b.canceled_at IS NULL;
 	`
 
-	if _, err := tx.Exec(ctx, query4, userID); err != nil {
+	if _, err := tx.Exec(ctx, queryCancelUsersBookings, userID); err != nil {
 		return fmt.Errorf(
 			"failed to cancel users books: %w",
 			err,
@@ -102,7 +102,7 @@ func (r *UsersRepository) DeleteUser(
 	err = tx.Commit(ctx)
 	if err != nil {
 		return fmt.Errorf(
-			"failed to coomit delete user: %w",
+			"failed to commit delete user: %w",
 			err,
 		)
 	}
