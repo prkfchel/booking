@@ -25,12 +25,12 @@ type EventsService interface {
 
 	GetEvent(
 		ctx context.Context,
-		id int,
+		EventID int,
 	) (domain.Event, error)
 
 	PatchEvent(
 		ctx context.Context,
-		id int,
+		EventID int,
 		patch domain.PatchEvent,
 	) (domain.Event, error)
 
@@ -41,7 +41,7 @@ type EventsService interface {
 
 	CancelEvent(
 		ctx context.Context,
-		id int,
+		eventID int,
 	) (domain.Event, error)
 }
 
@@ -50,7 +50,7 @@ func (h *EventsHTTPHandler) Routes() []core_http_server.Route {
 		{
 			Method:  http.MethodPost,
 			Path:    "/events",
-			Handler: h.CreaterEvent,
+			Handler: h.CreateEvent,
 		},
 		{
 			Method:  http.MethodGet,

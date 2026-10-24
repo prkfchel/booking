@@ -11,12 +11,27 @@ import (
 
 type getBooksResponseDTO []BookResponseDTO
 
+// GetEvents     godoc
+// @Summary      Список броней
+// @Description  Просмотр списка броней с опциональной пагинацией и фильтрацией по пользователю и событию и времяни создания
+// @Tags         bookings
+// @Produce      json
+// @Param        limit  query int false                        "Размер страницы с бронями"
+// @Param        offset query int false                        "Смещение страницы с бронями"
+// @Param        dateFrom  query time false                    "Начало временного интервала"
+// @Param        dateTo query int false                        "Конец временного интервала"
+// @Param        userId query int false                        "ID владельца брони"
+// @Param        eventId query int false                       "ID события"
+// @Success      200 {object} getBooksResponseDTO             "Успешное получение списка броней"
+// @Failure      400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure      500 {object} core_http_response.ErrorResponse "Internal server error"
+// @Router       /books [get]
 func (h *BookHTTPHandler) GetBooks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)
 	responseHandler := core_http_response.NewHTTPResponseWriter(log, w)
 
-	filter, err := GetEventsFilter(r)
+	filter, err := GetBookingFilter(r)
 	if err != nil {
 		responseHandler.ErrorResponse(err, "failed to get query params")
 		return
@@ -33,32 +48,22 @@ func (h *BookHTTPHandler) GetBooks(w http.ResponseWriter, r *http.Request) {
 	responseHandler.JSONResponse(http.StatusOK, response)
 }
 
-func GetEventsFilter(r *http.Request) (
+func GetBookingFilter(r *http.Request) (
 	domain.BookingsFilter,
 	error,
 ) {
 
 	const (
-		limitQueryParamKey    = "limit"
-		offsetQueryParamKey   = "offset"
 		eventIDQueryParamKey  = "eventId"
 		userIDQueryParamKey   = "userId"
 		dateFromQueryParamKey = "dateFrom"
 		dateToQueryParamKey   = "dateTo"
 	)
 
-	limit, err := core_http_request.GetIntQueryParams(r, limitQueryParamKey)
+	limit, offset, err := core_http_request.GetLimitOffsetQueryParams(r)
 	if err != nil {
 		return domain.BookingsFilter{}, fmt.Errorf(
-			"failed to get limit query param: %w",
-			err,
-		)
-	}
-
-	offset, err := core_http_request.GetIntQueryParams(r, offsetQueryParamKey)
-	if err != nil {
-		return domain.BookingsFilter{}, fmt.Errorf(
-			"failed to get offset query param: %w",
+			"failed to get limit/offset query params: %w",
 			err,
 		)
 	}

@@ -8,6 +8,16 @@ import (
 
 type cancelEventResponseDTO EventResponseDTO
 
+// CancelEvent   godoc
+// @Summary      Отменить событие
+// @Description  Отменить событие в системе
+// @Tags         events
+// @Produce      json
+// @Param        id  path string true                          	"ID отменяемого события" Format(uuid)
+// @Success      201 {object} cancelEventResponseDTO 			"Событие успешно отменено"
+// @Failure      400 {object} core_http_response.ErrorResponse  "Bad request"
+// @Failure      500 {object} core_http_response.ErrorResponse  "Internal server error"
+// @Router       /events/cancel [post]
 func (h *EventsHTTPHandler) CancelEvent(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)

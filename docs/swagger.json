@@ -1,0 +1,1388 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Booking App REST-API scheme",
+        "title": "Booking API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "127.0.0.1:5050",
+    "basePath": "/api/v1",
+    "paths": {
+        "/books": {
+            "get": {
+                "description": "Просмотр списка броней с опциональной пагинацией и фильтрацией по пользователю и событию и времяни создания",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "bookings"
+                ],
+                "summary": "Список броней",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Размер страницы с бронями",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Смещение страницы с бронями",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Конец временного интервала",
+                        "name": "dateTo",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID владельца брони",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID события",
+                        "name": "eventId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное получение списка броней",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/internal_features_bookings_transport_http.BookResponseDTO"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Создать новую бронь в системе",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "bookings"
+                ],
+                "summary": "Создать бронь",
+                "parameters": [
+                    {
+                        "description": "CreateEvent тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_bookings_transport_http.createBookRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Успешно созданная бронь",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_bookings_transport_http.createBookResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/books/cancel": {
+            "post": {
+                "description": "Отменить бронь в системе",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "bookings"
+                ],
+                "summary": "Отменить бронь",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "ID отменяемой брони",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Бронь успешно отменена",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_bookings_transport_http.cancelBookResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/books/{id}": {
+            "get": {
+                "description": "Получение конкретной брони по ее ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "bookings"
+                ],
+                "summary": "Получение брони",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "ID получаемой брони",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Бронь успешно найдена",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_bookings_transport_http.getBookResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Event not found",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/event/{id}": {
+            "patch": {
+                "description": "Изменение информации об уже существующем в системе событии\n### Логика обновления полей (Three-state logic):\n1. **Поле не передано**: `description` игнорируется, значение в БД не меняется\n2. **Явно передано значение**: `\"description\": \"событие бла-бла-бла\"` - устанавливает новое описание в БД\n3. **Передан null**: `\"description\": null` - очищает поле в БД (set to NULL)\nОграничения: `title` не может быть выставлен как null\nОграничения: `total_tickets` не может быть выставлен как null\nОграничения: `address` не может быть выставлен как null\nОграничения: `starts_at` не может быть выставлен как null",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Изменение события",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "ID изменяемого события",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "PatchEvent тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_events_transport_http.patchEventRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешно изменённый пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_events_transport_http.patchEventResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "event not found",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/events": {
+            "get": {
+                "description": "Просмотр списка событий с опциональной пагинацией и фильтрацией по названию и аддресу, времяни проведениря и id организатора",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Список событий",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Размер страницы с событиями",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Смещение страницы с событиями",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Конец временного интервала",
+                        "name": "dateTo",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ID организатора мероприятия",
+                        "name": "ownerId",
+                        "in": "query"
+                    },
+                    {
+                        "description": "GetEvents тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_events_transport_http.getEventsRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное получение списка событий",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/internal_features_events_transport_http.EventResponseDTO"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Создать новое событие в системе",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Создать событие",
+                "parameters": [
+                    {
+                        "description": "CreateEvent тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_events_transport_http.createEventRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Успешно созданное событие",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_events_transport_http.createEventResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/events/cancel": {
+            "post": {
+                "description": "Отменить событие в системе",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Отменить событие",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "ID отменяемого события",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Событие успешно отменено",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_events_transport_http.cancelEventResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/events/{id}": {
+            "get": {
+                "description": "Получение конкретного события по его ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Получение события",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "ID получаемого события",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "событие успешно найдено",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_events_transport_http.getEventReaponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Event not found",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users": {
+            "get": {
+                "description": "Просмотр списка пользователей с опциональной пагинацией",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Список пользователей",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Размер страницы с пользователями",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Смещение страницы с пользователями",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное получение списка пользователей",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/internal_features_users_transport_http.UserResponseDTO"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Создать нового пользователя в системе",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Создать пользователя",
+                "parameters": [
+                    {
+                        "description": "CreateUser тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_users_transport_http.CreateUserRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Успешно созданный пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_users_transport_http.CreateUserResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
+            "get": {
+                "description": "Получение конкретного пользователя по его ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Получение пользователя",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "ID получаемого пользователя",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Пользователь успешно найден",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_users_transport_http.getUserResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Удаление существующего в системе пользователя по его ID",
+                "tags": [
+                    "users"
+                ],
+                "summary": "Удаление пользователя",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "ID удаляемого пользователя",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Успешное удаление пользователя"
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Изменение информации об уже существующем в системе пользователе\n### Логика обновления полей (Three-state logic):\n1. **Поле не передано**: `phone_number` игнорируется, значение в БД не меняется\n2. **Явно передано значение**: `\"phone_number\": \"+711122233344\"` - устанавливает новый номер телефона в БД\n3. **Передан null**: `\"phone_number\": null` - очищает поле в БД (set to NULL)\nОграничения: `full_name` не может быть выставлен как null",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Изменение пользователя",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "ID изменяемого пользователя",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "PatchUser тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_users_transport_http.PatchUserRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешно изменённый пользователь",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_users_transport_http.PatchUserResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "booking_internal_core_transport_http_response.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "full error text"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "short human-readable message"
+                }
+            }
+        },
+        "booking_internal_core_transport_http_type.Nullable-int": {
+            "type": "object",
+            "properties": {
+                "set": {
+                    "type": "boolean"
+                },
+                "value": {
+                    "type": "integer"
+                }
+            }
+        },
+        "booking_internal_core_transport_http_type.Nullable-string": {
+            "type": "object",
+            "properties": {
+                "set": {
+                    "type": "boolean"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "booking_internal_core_transport_http_type.Nullable-time_Time": {
+            "type": "object",
+            "properties": {
+                "set": {
+                    "type": "boolean"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_features_bookings_transport_http.BookResponseDTO": {
+            "type": "object",
+            "properties": {
+                "canceled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "canceled_at": {
+                    "type": "string",
+                    "example": "null"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2006-10-09T12:55:45.159001Z"
+                },
+                "event_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "user_id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_features_bookings_transport_http.cancelBookResponseDTO": {
+            "type": "object",
+            "properties": {
+                "canceled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "canceled_at": {
+                    "type": "string",
+                    "example": "null"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2006-10-09T12:55:45.159001Z"
+                },
+                "event_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "user_id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_features_bookings_transport_http.createBookRequestDTO": {
+            "type": "object",
+            "required": [
+                "event_id",
+                "user_id"
+            ],
+            "properties": {
+                "event_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "user_id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_features_bookings_transport_http.createBookResponseDTO": {
+            "type": "object",
+            "properties": {
+                "canceled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "canceled_at": {
+                    "type": "string",
+                    "example": "null"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2006-10-09T12:55:45.159001Z"
+                },
+                "event_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "user_id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_features_bookings_transport_http.getBookResponseDTO": {
+            "type": "object",
+            "properties": {
+                "canceled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "canceled_at": {
+                    "type": "string",
+                    "example": "null"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2006-10-09T12:55:45.159001Z"
+                },
+                "event_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "user_id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_features_events_transport_http.EventResponseDTO": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "st. Pushkina, b. Kalatushkina"
+                },
+                "canceled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "canceled_at": {
+                    "type": "string",
+                    "example": "null"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2006-11-10T19:30:00Z"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "interesting concert and show"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "owner_user_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "starts_at": {
+                    "type": "string",
+                    "example": "2026-11-10T19:30:00Z"
+                },
+                "tite": {
+                    "type": "string",
+                    "example": "concert"
+                },
+                "total_tickets": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 3
+                }
+            }
+        },
+        "internal_features_events_transport_http.cancelEventResponseDTO": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "st. Pushkina, b. Kalatushkina"
+                },
+                "canceled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "canceled_at": {
+                    "type": "string",
+                    "example": "null"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2006-11-10T19:30:00Z"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "interesting concert and show"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "owner_user_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "starts_at": {
+                    "type": "string",
+                    "example": "2026-11-10T19:30:00Z"
+                },
+                "tite": {
+                    "type": "string",
+                    "example": "concert"
+                },
+                "total_tickets": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 3
+                }
+            }
+        },
+        "internal_features_events_transport_http.createEventRequestDTO": {
+            "type": "object",
+            "required": [
+                "address",
+                "owner_user_id",
+                "starts_at",
+                "title",
+                "total_tickets"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "minLength": 5,
+                    "example": "st. Pushkina, b. Kalatushkina"
+                },
+                "description": {
+                    "type": "string",
+                    "minLength": 2,
+                    "example": "interesting concert and show"
+                },
+                "owner_user_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "starts_at": {
+                    "type": "string",
+                    "example": "2026-11-10T19:30:00Z"
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "minLength": 2,
+                    "example": "concert"
+                },
+                "total_tickets": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 100
+                }
+            }
+        },
+        "internal_features_events_transport_http.createEventResponseDTO": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "st. Pushkina, b. Kalatushkina"
+                },
+                "canceled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "canceled_at": {
+                    "type": "string",
+                    "example": "null"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2006-11-10T19:30:00Z"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "interesting concert and show"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "owner_user_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "starts_at": {
+                    "type": "string",
+                    "example": "2026-11-10T19:30:00Z"
+                },
+                "tite": {
+                    "type": "string",
+                    "example": "concert"
+                },
+                "total_tickets": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 3
+                }
+            }
+        },
+        "internal_features_events_transport_http.getEventReaponseDTO": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "st. Pushkina, b. Kalatushkina"
+                },
+                "canceled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "canceled_at": {
+                    "type": "string",
+                    "example": "null"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2006-11-10T19:30:00Z"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "interesting concert and show"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "owner_user_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "starts_at": {
+                    "type": "string",
+                    "example": "2026-11-10T19:30:00Z"
+                },
+                "tite": {
+                    "type": "string",
+                    "example": "concert"
+                },
+                "total_tickets": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 3
+                }
+            }
+        },
+        "internal_features_events_transport_http.getEventsRequestDTO": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "st. Pushkina, b. Kalatushkina"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "concert"
+                }
+            }
+        },
+        "internal_features_events_transport_http.patchEventRequestDTO": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/booking_internal_core_transport_http_type.Nullable-string"
+                },
+                "description": {
+                    "$ref": "#/definitions/booking_internal_core_transport_http_type.Nullable-string"
+                },
+                "starts_at": {
+                    "$ref": "#/definitions/booking_internal_core_transport_http_type.Nullable-time_Time"
+                },
+                "title": {
+                    "$ref": "#/definitions/booking_internal_core_transport_http_type.Nullable-string"
+                },
+                "total_tickets": {
+                    "$ref": "#/definitions/booking_internal_core_transport_http_type.Nullable-int"
+                }
+            }
+        },
+        "internal_features_events_transport_http.patchEventResponseDTO": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "st. Pushkina, b. Kalatushkina"
+                },
+                "canceled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "canceled_at": {
+                    "type": "string",
+                    "example": "null"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2006-11-10T19:30:00Z"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "interesting concert and show"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "owner_user_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "starts_at": {
+                    "type": "string",
+                    "example": "2026-11-10T19:30:00Z"
+                },
+                "tite": {
+                    "type": "string",
+                    "example": "concert"
+                },
+                "total_tickets": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 3
+                }
+            }
+        },
+        "internal_features_users_transport_http.CreateUserRequestDTO": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "mail": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 9,
+                    "example": "user@mail.com"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3,
+                    "example": "Ivan Ivanov"
+                },
+                "phone_number": {
+                    "type": "string",
+                    "maxLength": 15,
+                    "minLength": 10,
+                    "example": "+79998887766"
+                }
+            }
+        },
+        "internal_features_users_transport_http.CreateUserResponseDTO": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2006-10-09T12:55:45.159001Z"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "user@mail.com"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Ivan Ivanov"
+                },
+                "phone_number": {
+                    "type": "string",
+                    "example": "+79998887766"
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 3
+                }
+            }
+        },
+        "internal_features_users_transport_http.PatchUserRequestDTO": {
+            "type": "object",
+            "properties": {
+                "mail": {
+                    "$ref": "#/definitions/booking_internal_core_transport_http_type.Nullable-string"
+                },
+                "name": {
+                    "$ref": "#/definitions/booking_internal_core_transport_http_type.Nullable-string"
+                },
+                "phone_number": {
+                    "$ref": "#/definitions/booking_internal_core_transport_http_type.Nullable-string"
+                }
+            }
+        },
+        "internal_features_users_transport_http.PatchUserResponseDTO": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2006-10-09T12:55:45.159001Z"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "user@mail.com"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Ivan Ivanov"
+                },
+                "phone_number": {
+                    "type": "string",
+                    "example": "+79998887766"
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 3
+                }
+            }
+        },
+        "internal_features_users_transport_http.UserResponseDTO": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2006-10-09T12:55:45.159001Z"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "user@mail.com"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Ivan Ivanov"
+                },
+                "phone_number": {
+                    "type": "string",
+                    "example": "+79998887766"
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 3
+                }
+            }
+        },
+        "internal_features_users_transport_http.getUserResponseDTO": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2006-10-09T12:55:45.159001Z"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "user@mail.com"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Ivan Ivanov"
+                },
+                "phone_number": {
+                    "type": "string",
+                    "example": "+79998887766"
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 3
+                }
+            }
+        }
+    }
+}

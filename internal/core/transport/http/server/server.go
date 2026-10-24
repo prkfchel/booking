@@ -1,6 +1,7 @@
 package core_http_server
 
 import (
+	"booking/docs"
 	core_logger "booking/internal/core/logger"
 	core_http_middleware "booking/internal/core/transport/http/middlerware"
 	"context"
@@ -8,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 
+	httpSwagger "github.com/swaggo/http-swagger"
 	"go.uber.org/zap"
 )
 
@@ -49,6 +51,24 @@ func (s *HTTPServer) RegisterAPIRoutes(routers ...*APIVersionRouter) {
 			http.StripPrefix(prefix, router.WithMiddleware()),
 		)
 	}
+}
+
+func (s *HTTPServer) RegisterSwagger() {
+	s.mux.Handle(
+		"/swagger/",
+		httpSwagger.Handler(
+			httpSwagger.URL("/swagger/doc.json"),
+		),
+	)
+
+	s.mux.HandleFunc(
+		"swagger/doc.json",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(docs.SwaggerInfo.ReadDoc()))
+		},
+	)
 }
 
 func (s *HTTPServer) Run(ctx context.Context) error {

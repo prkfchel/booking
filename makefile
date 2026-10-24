@@ -85,3 +85,10 @@ app-undeploy:
 	@docker compose down booking
 
 
+swagger-gen:
+	@docker compose run --rm swagger \
+		init \
+		-g cmd/booking/main.go \
+		-o docs \
+		--parseInternal \
+		--parseDependency
