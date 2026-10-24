@@ -22,6 +22,28 @@ type patchEventRequestDTO struct {
 
 type patchEventResponseDTO EventResponseDTO
 
+// PatchEvent    godoc
+// @Summary      Изменение события
+// @Description  Изменение информации об уже существующем в системе событии
+// @Description  ### Логика обновления полей (Three-state logic):
+// @Description  1. **Поле не передано**: `description` игнорируется, значение в БД не меняется
+// @Description  2. **Явно передано значение**: `"description": "событие бла-бла-бла"` - устанавливает новое описание в БД
+// @Description  3. **Передан null**: `"description": null` - очищает поле в БД (set to NULL)
+// @Description  Ограничения: `title` не может быть выставлен как null
+// @Description  Ограничения: `total_tickets` не может быть выставлен как null
+// @Description  Ограничения: `address` не может быть выставлен как null
+// @Description  Ограничения: `starts_at` не может быть выставлен как null
+// @Tags         events
+// @Accept       json
+// @Produce      json
+// @Param        id      path string           		true       "ID изменяемого события" Format(uuid)
+// @Param        request body patchEventRequestDTO 	true       "PatchEvent тело запроса"
+// @Success      200 {object} patchEventResponseDTO             "Успешно изменённый пользователь"
+// @Failure      400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure      404 {object} core_http_response.ErrorResponse "event not found"
+// @Failure      409 {object} core_http_response.ErrorResponse "Conflict"
+// @Failure      500 {object} core_http_response.ErrorResponse "Internal server error"
+// @Router       /event/{id} [patch]
 func (h *EventsHTTPHandler) PatchEvent(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)
