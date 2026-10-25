@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 )
 
 func (r *EventsRepository) PatchEvent(
@@ -51,15 +50,7 @@ func (r *EventsRepository) PatchEvent(
 		event.Version,
 	}
 
-	if event.Canceled {
-		queryPatchEvent = fmt.Sprintf(
-			queryPatchEvent,
-			", canceled = $8, canceled_at = $9",
-		)
-		args = append(args, event.Canceled, time.Now())
-	} else {
-		queryPatchEvent = fmt.Sprintf(queryPatchEvent, "")
-	}
+	queryPatchEvent = fmt.Sprintf(queryPatchEvent, "")
 
 	row := r.Pool.QueryRow(
 		ctx,
@@ -78,7 +69,6 @@ func (r *EventsRepository) PatchEvent(
 		&model.Address,
 		&model.StartsAt,
 		&model.OwnerUserID,
-		&model.Canceled,
 		&model.CanceledAt,
 	)
 

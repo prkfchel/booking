@@ -54,18 +54,18 @@ func (r *BookRepository) CreateBook(
 	}
 
 	queryGetTickets := `
-		SELECT total_tickets, canceled FROM booking.events
+		SELECT total_tickets, canceled_at FROM booking.events
 		WHERE id = $1 AND event_time > now()
 		FOR UPDATE;
 	`
 
 	var totalTickets int
-	var canceled bool
+	var canceledAt *time.Time
 	row = tx.QueryRow(ctx, queryGetTickets, book.EventID)
 
 	err = row.Scan(
 		&totalTickets,
-		&canceled,
+		&canceledAt,
 	)
 	if err != nil {
 		if errors.Is(err, core_postgres_pool.ErrNoRows) {
@@ -82,7 +82,7 @@ func (r *BookRepository) CreateBook(
 		)
 	}
 
-	if canceled {
+	if canceledAt != nil {
 		return domain.Booking{}, fmt.Errorf(
 			"event with id='%d' is already canceled: %w",
 			book.EventID,
@@ -99,6 +99,7 @@ func (r *BookRepository) CreateBook(
 	`
 
 	var userBooked, totalBooked int
+
 	row = tx.QueryRow(ctx, queryGetSoldTickets, book.UserID, book.EventID)
 
 	err = row.Scan(&userBooked, &totalBooked)
@@ -135,7 +136,6 @@ func (r *BookRepository) CreateBook(
 			event_id,
 			user_id,
 			created_at,
-			canceled,
 			canceled_at;
 	`
 
@@ -154,7 +154,6 @@ func (r *BookRepository) CreateBook(
 		&model.EventID,
 		&model.UserID,
 		&model.CreatedAt,
-		&model.Canceled,
 		&model.CanceledAt,
 	)
 	if err != nil {

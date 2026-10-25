@@ -26,17 +26,17 @@ func (r *EventsRepository) CancelEvent(
 	defer tx.Rollback(ctx)
 
 	queryEventCheck := `
-		SELECT canceled, event_time <= now() FROM booking.events
-		WHERE id = $1
+		SELECT event_time <= now()
+		FROM booking.events
+		WHERE id = $1 AND canceled_at IS NULL
 		FOR UPDATE;
 	`
 
 	row := tx.QueryRow(ctx, queryEventCheck, eventID)
 
-	var canceled, passed bool
+	var passed bool
 
 	err = row.Scan(
-		&canceled,
 		&passed,
 	)
 	if err != nil {
@@ -54,14 +54,6 @@ func (r *EventsRepository) CancelEvent(
 		)
 	}
 
-	if canceled {
-		return domain.Event{}, fmt.Errorf(
-			"event with id='%d' already canceled: %w",
-			eventID,
-			core_errors.ErrConflict,
-		)
-	}
-
 	if passed {
 		return domain.Event{}, fmt.Errorf(
 			"event is already passed: %w",
@@ -73,7 +65,6 @@ func (r *EventsRepository) CancelEvent(
 		UPDATE booking.events
 		SET 
 			version = version + 1,
-			canceled = TRUE,
 			canceled_at = now()
 		WHERE id = $1
 		RETURNING 
@@ -86,7 +77,6 @@ func (r *EventsRepository) CancelEvent(
 			event_address, 
 			event_time, 
 			owners_user_id,
-			canceled,
 			canceled_at;
 	`
 
@@ -104,7 +94,6 @@ func (r *EventsRepository) CancelEvent(
 		&model.Address,
 		&model.StartsAt,
 		&model.OwnerUserID,
-		&model.Canceled,
 		&model.CanceledAt,
 	)
 	if err != nil {
@@ -115,16 +104,15 @@ func (r *EventsRepository) CancelEvent(
 	}
 
 	queryCancelEventsBookings := `
-		UPDATE booking.bookings b
+		UPDATE booking.bookings 
 		SET 
-			canceled = TRUE,
 			canceled_at = now()
-		WHERE b.event_id = $1 AND b.canceled_at IS NULL;
+		WHERE event_id = $1 AND canceled_at IS NULL;
 	`
 
 	if _, err := tx.Exec(ctx, queryCancelEventsBookings, eventID); err != nil {
 		return domain.Event{}, fmt.Errorf(
-			"failed to cancel books: %w",
+			"failed to cancel bookings: %w",
 			err,
 		)
 	}
@@ -136,7 +124,7 @@ func (r *EventsRepository) CancelEvent(
 		)
 	}
 
-	eventDomain := DomainFromModel(model)
+	event := DomainFromModel(model)
 
-	return eventDomain, nil
+	return event, nil
 }

@@ -15,7 +15,6 @@ type EventResponseDTO struct {
 	Address      string     `json:"address" example:"st. Pushkina, b. Kalatushkina"`
 	StartsAt     time.Time  `json:"starts_at" example:"2026-11-10T19:30:00Z"`
 	OwnerUserID  int        `json:"owner_user_id" example:"1"`
-	Canceled     bool       `json:"canceled" example:"false"`
 	CanceledAt   *time.Time `json:"canceled_at" example:"null"`
 }
 
@@ -30,7 +29,6 @@ func DTOFromDomain(domain domain.Event) EventResponseDTO {
 		Address:      domain.Address,
 		StartsAt:     domain.StartsAt,
 		OwnerUserID:  domain.OwnerUserID,
-		Canceled:     domain.Canceled,
 		CanceledAt:   domain.CanceledAt,
 	}
 }

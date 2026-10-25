@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	coreerrors "booking/internal/core/errors"
+	core_errors "booking/internal/core/errors"
 )
 
 // Pagination - общие параметры постраничной выдачи для всех фильтров.
@@ -25,7 +25,7 @@ func (p Pagination) Validate() error {
 		return fmt.Errorf(
 			"limit must be positive: %d: %w",
 			*p.Limit,
-			coreerrors.ErrInvalidArgument,
+			core_errors.ErrInvalidArgument,
 		)
 	}
 
@@ -33,7 +33,7 @@ func (p Pagination) Validate() error {
 		return fmt.Errorf(
 			"offset must be non-negative: %d: %w",
 			*p.Offset,
-			coreerrors.ErrInvalidArgument,
+			core_errors.ErrInvalidArgument,
 		)
 	}
 
@@ -51,7 +51,7 @@ func validateDateRange(from, to *time.Time) error {
 			"dateFrom=%s must be before dateTo=%s: %w",
 			from.Format(time.RFC3339),
 			to.Format(time.RFC3339),
-			coreerrors.ErrInvalidArgument,
+			core_errors.ErrInvalidArgument,
 		)
 	}
 
@@ -65,7 +65,7 @@ func validateOptionalID(name string, id *int) error {
 			"%s must be positive: %d: %w",
 			name,
 			*id,
-			coreerrors.ErrInvalidArgument,
+			core_errors.ErrInvalidArgument,
 		)
 	}
 

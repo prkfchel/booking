@@ -15,7 +15,6 @@ const (
 	userEmailMaxLen = 100
 )
 
-// +, затем 9-14 цифр (всего 10-15 символов).
 var phoneRe = regexp.MustCompile(`^\+[0-9]{9,14}$`)
 
 type User struct {
@@ -97,8 +96,6 @@ func validateEmail(email string) error {
 		)
 	}
 
-	// ParseAddress принимает и формат "Name <a@b.c>",
-	// поэтому дополнительно сверяем, что это чистый адрес.
 	addr, err := mail.ParseAddress(email)
 	if err != nil || addr.Address != email {
 		return fmt.Errorf(

@@ -15,7 +15,6 @@ type EventModel struct {
 	Address      string
 	StartsAt     time.Time
 	OwnerUserID  int
-	Canceled     bool
 	CanceledAt   *time.Time
 }
 
@@ -30,7 +29,6 @@ func DomainFromModel(model EventModel) domain.Event {
 		model.Address,
 		model.StartsAt,
 		model.OwnerUserID,
-		model.Canceled,
 		model.CanceledAt,
 	)
 }
