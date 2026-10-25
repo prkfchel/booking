@@ -10,17 +10,28 @@ import (
 )
 
 type createEventRequestDTO struct {
-	Title        string    `json:"title" validate:"required,min=2,max=500"`
-	Description  *string   `json:"description" validate:"omitempty,min=2"`
-	TotalTickets int       `json:"total_tickets" validate:"required,min=1"`
-	Address      string    `json:"address" validate:"required,min=5"`
-	StartsAt     time.Time `json:"starts_at" validate:"required"`
-	OwnerUserID  int       `json:"owner_user_id" validate:"required"`
+	Title        string    `json:"title" validate:"required,min=2,max=500" example:"concert"`
+	Description  *string   `json:"description" validate:"omitempty,min=2" example:"interesting concert and show"`
+	TotalTickets int       `json:"total_tickets" validate:"required,min=1" example:"100"`
+	Address      string    `json:"address" validate:"required,min=5" example:"st. Pushkina, b. Kalatushkina"`
+	StartsAt     time.Time `json:"starts_at" validate:"required" example:"2026-11-10T19:30:00Z"`
+	OwnerUserID  int       `json:"owner_user_id" validate:"required" example:"1"`
 }
 
 type createEventResponseDTO EventResponseDTO
 
-func (h *EventsHTTPHandler) CreaterEvent(w http.ResponseWriter, r *http.Request) {
+// CreaterEvent  godoc
+// @Summary      Создать событие
+// @Description  Создать новое событие в системе
+// @Tags         events
+// @Accept       json
+// @Produce      json
+// @Param        request body createEventRequestDTO true 		"CreateEvent тело запроса"
+// @Success      201 {object} createEventResponseDTO 			"Успешно созданное событие"
+// @Failure      400 {object} core_http_response.ErrorResponse  "Bad request"
+// @Failure      500 {object} core_http_response.ErrorResponse  "Internal server error"
+// @Router       /events [post]
+func (h *EventsHTTPHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)
 	responseHandler := core_http_response.NewHTTPResponseWriter(log, w)

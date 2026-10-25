@@ -6,12 +6,11 @@ import (
 )
 
 type BookResponseDTO struct {
-	ID         int
-	EventID    int
-	UserID     int
-	CreatedAt  time.Time
-	Canceled   bool
-	CanceledAt *time.Time
+	ID         int        `json:"id" example:"10"`
+	EventID    int        `json:"event_id" example:"1"`
+	UserID     int        `json:"user_id" example:"1"`
+	CreatedAt  time.Time  `json:"created_at" example:"2006-10-09T12:55:45.159001Z"`
+	CanceledAt *time.Time `json:"canceled_at" example:"null"`
 }
 
 func DTOFromDomain(domain domain.Booking) BookResponseDTO {
@@ -20,7 +19,6 @@ func DTOFromDomain(domain domain.Booking) BookResponseDTO {
 		EventID:    domain.EventID,
 		UserID:     domain.UserID,
 		CreatedAt:  domain.CreatedAt,
-		Canceled:   domain.Canceled,
 		CanceledAt: domain.CanceledAt,
 	}
 }

@@ -38,7 +38,6 @@ func (r *EventsRepository) CreateEvent(
 			event_address, 
 			event_time, 
 			owners_user_id,
-			canceled,
 			canceled_at;
 	`
 	row := r.Pool.QueryRow(
@@ -65,7 +64,6 @@ func (r *EventsRepository) CreateEvent(
 		&model.Address,
 		&model.StartsAt,
 		&model.OwnerUserID,
-		&model.Canceled,
 		&model.CanceledAt,
 	)
 	if err != nil {

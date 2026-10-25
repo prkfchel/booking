@@ -6,17 +6,16 @@ import (
 )
 
 type EventResponseDTO struct {
-	ID           int
-	Version      int
-	Title        string
-	Description  *string
-	TotalTickets int
-	CreatedAt    time.Time
-	Address      string
-	StartsAt     time.Time
-	OwnerUserID  int
-	Canceled     bool
-	CanceledAt   *time.Time
+	ID           int        `json:"id" example:"10"`
+	Version      int        `json:"version" example:"3"`
+	Title        string     `json:"tite" example:"concert"`
+	Description  *string    `json:"description" example:"interesting concert and show"`
+	TotalTickets int        `json:"total_tickets" example:"100"`
+	CreatedAt    time.Time  `json:"created_at" example:"2006-11-10T19:30:00Z"`
+	Address      string     `json:"address" example:"st. Pushkina, b. Kalatushkina"`
+	StartsAt     time.Time  `json:"starts_at" example:"2026-11-10T19:30:00Z"`
+	OwnerUserID  int        `json:"owner_user_id" example:"1"`
+	CanceledAt   *time.Time `json:"canceled_at" example:"null"`
 }
 
 func DTOFromDomain(domain domain.Event) EventResponseDTO {
@@ -30,7 +29,6 @@ func DTOFromDomain(domain domain.Event) EventResponseDTO {
 		Address:      domain.Address,
 		StartsAt:     domain.StartsAt,
 		OwnerUserID:  domain.OwnerUserID,
-		Canceled:     domain.Canceled,
 		CanceledAt:   domain.CanceledAt,
 	}
 }

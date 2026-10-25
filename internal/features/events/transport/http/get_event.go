@@ -8,6 +8,17 @@ import (
 
 type getEventReaponseDTO EventResponseDTO
 
+// GetEvent      godoc
+// @Summary      Получение события
+// @Description  Получение конкретного события по его ID
+// @Tags         events
+// @Produce      json
+// @Param        id  path string true                          	"ID получаемого события" Format(uuid)
+// @Success      200 {object} getEventReaponseDTO                "событие успешно найдено"
+// @Failure      400 {object} core_http_response.ErrorResponse  "Bad request"
+// @Failure      404 {object} core_http_response.ErrorResponse 	"Event not found"
+// @Failure      500 {object} core_http_response.ErrorResponse 	"Internal server error"
+// @Router       /events/{id} [get]
 func (h *EventsHTTPHandler) GetEvent(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)

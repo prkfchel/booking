@@ -10,7 +10,6 @@ type BookModel struct {
 	EventID    int
 	UserID     int
 	CreatedAt  time.Time
-	Canceled   bool
 	CanceledAt *time.Time
 }
 
@@ -20,7 +19,6 @@ func domainFromModel(model BookModel) domain.Booking {
 		model.EventID,
 		model.UserID,
 		model.CreatedAt,
-		model.Canceled,
 		model.CanceledAt,
 	)
 }

@@ -2,7 +2,6 @@ package events_service
 
 import (
 	"booking/internal/core/domain"
-	core_errors "booking/internal/core/errors"
 	"context"
 	"fmt"
 )
@@ -18,13 +17,6 @@ func (s *EventsService) PatchEvent(
 			"failed to get user with id='%d' from repository: %w",
 			id,
 			err,
-		)
-	}
-
-	if event.Canceled {
-		return domain.Event{}, fmt.Errorf(
-			"imposible to patch canceled event: %w",
-			core_errors.ErrInvalidArgument,
 		)
 	}
 

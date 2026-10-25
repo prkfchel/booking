@@ -20,7 +20,6 @@ func (r *BookRepository) GetBooks(
 			event_id,
 			user_id,
 			created_at,
-			canceled,
 			canceled_at
 		FROM booking.bookings
 		%s
@@ -84,7 +83,6 @@ func (r *BookRepository) GetBooks(
 			&model.EventID,
 			&model.UserID,
 			&model.CreatedAt,
-			&model.Canceled,
 			&model.CanceledAt,
 		)
 		if err != nil {

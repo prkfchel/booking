@@ -61,3 +61,44 @@ func GetDateQueryParams(r *http.Request, key string) (*time.Time, error) {
 
 	return &date, nil
 }
+
+func GetLimitOffsetQueryParams(r *http.Request) (*int, *int, error) {
+
+	const (
+		limitQueryParamKey  = "limit"
+		offsetQueryParamKey = "offset"
+	)
+
+	limit, err := GetIntQueryParams(r, limitQueryParamKey)
+	if err != nil {
+		return nil, nil, fmt.Errorf(
+			"failed to get limit query param: %w",
+			err,
+		)
+	}
+
+	offset, err := GetIntQueryParams(r, offsetQueryParamKey)
+	if err != nil {
+		return nil, nil, fmt.Errorf(
+			"failed to get offset query param: %w",
+			err,
+		)
+	}
+
+	if limit != nil && *limit < 1 {
+		return nil, nil, fmt.Errorf(
+			"limit query param must be positive %w",
+			core_errors.ErrInvalidArgument,
+		)
+	}
+
+	if offset != nil && *offset < 0 {
+		return nil, nil, fmt.Errorf(
+			"offset query param cant be negative: %w",
+			core_errors.ErrInvalidArgument,
+		)
+	}
+
+	return limit, offset, nil
+
+}

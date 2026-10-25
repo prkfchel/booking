@@ -22,7 +22,6 @@ func (r *BookRepository) GetBook(
 			event_id,
 			user_id,
 			created_at,
-			canceled,
 			canceled_at
 		FROM booking.bookings
 		WHERE id = $1;
@@ -37,7 +36,6 @@ func (r *BookRepository) GetBook(
 		&model.EventID,
 		&model.UserID,
 		&model.CreatedAt,
-		&model.Canceled,
 		&model.CanceledAt,
 	)
 

@@ -28,17 +28,17 @@ func (r *BookRepository) CancelBook(
 	defer tx.Rollback(ctx)
 
 	queryCheckCanceledBooking := `
-		SELECT canceled FROM booking.bookings
+		SELECT canceled_at FROM booking.bookings
 		WHERE id = $1 
 		FOR UPDATE;
 	`
 
 	row := tx.QueryRow(ctx, queryCheckCanceledBooking, bookID)
 
-	var canceled bool
+	var canceledAt *time.Time
 
 	err = row.Scan(
-		&canceled,
+		&canceledAt,
 	)
 
 	if err != nil {
@@ -56,7 +56,7 @@ func (r *BookRepository) CancelBook(
 		)
 	}
 
-	if canceled {
+	if canceledAt != nil {
 		return domain.Booking{}, fmt.Errorf(
 			"book is already canceled: %w",
 			core_errors.ErrConflict,
@@ -66,7 +66,6 @@ func (r *BookRepository) CancelBook(
 	queryCancelBooking := `
 		UPDATE booking.bookings
 		SET 
-			canceled = true,
 			canceled_at = $1
 		WHERE id = $2
 		RETURNING
@@ -74,7 +73,6 @@ func (r *BookRepository) CancelBook(
 			event_id,
 			user_id,
 			created_at,
-			canceled,
 			canceled_at;
 	`
 
@@ -87,7 +85,6 @@ func (r *BookRepository) CancelBook(
 		&model.EventID,
 		&model.UserID,
 		&model.CreatedAt,
-		&model.Canceled,
 		&model.CanceledAt,
 	)
 	if err != nil {
