@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	coreerrors "booking/internal/core/errors"
+	core_errors "booking/internal/core/errors"
 )
 
 const (
@@ -24,7 +24,6 @@ type Event struct {
 	Address      string
 	StartsAt     time.Time
 	OwnerUserID  int
-	Canceled     bool
 	CanceledAt   *time.Time
 }
 
@@ -38,7 +37,6 @@ func NewEvent(
 	address string,
 	startsAt time.Time,
 	ownerUserID int,
-	canceled bool,
 	canceledAt *time.Time,
 ) Event {
 	return Event{
@@ -51,7 +49,6 @@ func NewEvent(
 		Address:      address,
 		StartsAt:     startsAt,
 		OwnerUserID:  ownerUserID,
-		Canceled:     canceled,
 		CanceledAt:   canceledAt,
 	}
 }
@@ -74,7 +71,6 @@ func NewUninitializedEvent(
 		address,
 		startsAt,
 		ownerUserID,
-		UninitializedCanceled,
 		UninitializedCanceledAt,
 	)
 }
@@ -87,7 +83,7 @@ func (e *Event) Validate() error {
 			eventTitleMinLen,
 			eventTitleMaxLen,
 			titleLen,
-			coreerrors.ErrInvalidArgument,
+			core_errors.ErrInvalidArgument,
 		)
 	}
 
@@ -98,7 +94,7 @@ func (e *Event) Validate() error {
 				"description len must be at least %d: %d: %w",
 				eventDescriptionMinLen,
 				descriptionLen,
-				coreerrors.ErrInvalidArgument,
+				core_errors.ErrInvalidArgument,
 			)
 		}
 	}
@@ -107,7 +103,7 @@ func (e *Event) Validate() error {
 		return fmt.Errorf(
 			"total tickets must be positive number: %d: %w",
 			e.TotalTickets,
-			coreerrors.ErrInvalidArgument,
+			core_errors.ErrInvalidArgument,
 		)
 	}
 
@@ -117,14 +113,14 @@ func (e *Event) Validate() error {
 			"address len must be at least %d: %d: %w",
 			eventAddressMinLen,
 			addressLen,
-			coreerrors.ErrInvalidArgument,
+			core_errors.ErrInvalidArgument,
 		)
 	}
 
 	if e.StartsAt.IsZero() {
 		return fmt.Errorf(
 			"event start time must be set: %w",
-			coreerrors.ErrInvalidArgument,
+			core_errors.ErrInvalidArgument,
 		)
 	}
 
@@ -132,7 +128,7 @@ func (e *Event) Validate() error {
 		return fmt.Errorf(
 			"owner user id must be positive number: %d: %w",
 			e.OwnerUserID,
-			coreerrors.ErrInvalidArgument,
+			core_errors.ErrInvalidArgument,
 		)
 	}
 
@@ -167,28 +163,28 @@ func (p PatchEvent) Validate() error {
 	if p.Title.Set && p.Title.Value == nil {
 		return fmt.Errorf(
 			"title can't be set and null: %w",
-			coreerrors.ErrInvalidArgument,
+			core_errors.ErrInvalidArgument,
 		)
 	}
 
 	if p.TotalTickets.Set && p.TotalTickets.Value == nil {
 		return fmt.Errorf(
 			"total tickets can't be set and null: %w",
-			coreerrors.ErrInvalidArgument,
+			core_errors.ErrInvalidArgument,
 		)
 	}
 
 	if p.Address.Set && p.Address.Value == nil {
 		return fmt.Errorf(
 			"address can't be set and null: %w",
-			coreerrors.ErrInvalidArgument,
+			core_errors.ErrInvalidArgument,
 		)
 	}
 
 	if p.StartsAt.Set && p.StartsAt.Value == nil {
 		return fmt.Errorf(
 			"start time can't be set and null: %w",
-			coreerrors.ErrInvalidArgument,
+			core_errors.ErrInvalidArgument,
 		)
 	}
 

@@ -26,7 +26,6 @@ func (r *EventsRepository) GetEvent(
 			event_address, 
 			event_time, 
 			owners_user_id,
-			canceled,
 			canceled_at FROM booking.events
 		WHERE id = $1;
 	`
@@ -45,7 +44,6 @@ func (r *EventsRepository) GetEvent(
 		&model.Address,
 		&model.StartsAt,
 		&model.OwnerUserID,
-		&model.Canceled,
 		&model.CanceledAt,
 	)
 

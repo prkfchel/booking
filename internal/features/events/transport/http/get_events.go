@@ -10,12 +10,28 @@ import (
 )
 
 type getEventsRequestDTO struct {
-	Title   *string `json:"title"`
-	Address *string `json:"address"`
+	Title   *string `json:"title" example:"concert"`
+	Address *string `json:"address" example:"st. Pushkina, b. Kalatushkina"`
 }
 
 type getEventsResponseDTO []EventResponseDTO
 
+// GetEvents     godoc
+// @Summary      Список событий
+// @Description  Просмотр списка событий с опциональной пагинацией и фильтрацией по названию и аддресу, времяни проведениря и id организатора
+// @Tags         events
+// @Accept       json
+// @Produce      json
+// @Param        limit  query int false                        "Размер страницы с событиями"
+// @Param        offset query int false                        "Смещение страницы с событиями"
+// @Param        dateFrom  query time false                    "Начало временного интервала"
+// @Param        dateTo query int false                        "Конец временного интервала"
+// @Param        ownerId query int false                      "ID организатора мероприятия"
+// @Param        request body getEventsRequestDTO true 		   "GetEvents тело запроса"
+// @Success      200 {object} getEventsResponseDTO             "Успешное получение списка событий"
+// @Failure      400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure      500 {object} core_http_response.ErrorResponse "Internal server error"
+// @Router       /events [get]
 func (h *EventsHTTPHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)
@@ -53,10 +69,10 @@ func GetEventsFilter(r *http.Request, request getEventsRequestDTO) (
 	const (
 		dateFromQueryParamKey = "dateFrom"
 		dateToQueryParamKey   = "dateTo"
-		ownersIdQueryParamKey = "ownersId"
+		ownerIdQueryParamKey  = "ownerId"
 	)
 
-	limit, offset, err := getLimitOffsetQueryParams(r)
+	limit, offset, err := core_http_request.GetLimitOffsetQueryParams(r)
 	if err != nil {
 		return domain.EventsFilter{}, fmt.Errorf(
 			"failed to get limit/offset query params: %w",
@@ -64,7 +80,7 @@ func GetEventsFilter(r *http.Request, request getEventsRequestDTO) (
 		)
 	}
 
-	ownersUserId, err := core_http_request.GetIntQueryParams(r, ownersIdQueryParamKey)
+	ownersUserId, err := core_http_request.GetIntQueryParams(r, ownerIdQueryParamKey)
 	if err != nil {
 		return domain.EventsFilter{}, fmt.Errorf(
 			"failed to get owners user id: %w",

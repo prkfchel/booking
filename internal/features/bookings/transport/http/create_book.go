@@ -9,12 +9,23 @@ import (
 )
 
 type createBookRequestDTO struct {
-	EventID int `json:"event_id" validate:"required"`
-	UserID  int `json:"user_id" validate:"required"`
+	EventID int `json:"event_id" validate:"required" example:"1"`
+	UserID  int `json:"user_id" validate:"required" example:"1"`
 }
 
 type createBookResponseDTO BookResponseDTO
 
+// CreateBook  godoc
+// @Summary      Создать бронь
+// @Description  Создать новую бронь в системе
+// @Tags         bookings
+// @Accept       json
+// @Produce      json
+// @Param        request body createBookRequestDTO true 		"CreateEvent тело запроса"
+// @Success      201 {object} createBookResponseDTO 			"Успешно созданная бронь"
+// @Failure      400 {object} core_http_response.ErrorResponse  "Bad request"
+// @Failure      500 {object} core_http_response.ErrorResponse  "Internal server error"
+// @Router       /books [post]
 func (h *BookHTTPHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)

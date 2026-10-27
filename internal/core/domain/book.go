@@ -12,7 +12,6 @@ type Booking struct {
 	EventID    int
 	UserID     int
 	CreatedAt  time.Time
-	Canceled   bool
 	CanceledAt *time.Time
 }
 
@@ -21,7 +20,6 @@ func NewBooking(
 	eventID int,
 	userID int,
 	createdAt time.Time,
-	canceled bool,
 	canceledAt *time.Time,
 ) Booking {
 	return Booking{
@@ -29,7 +27,6 @@ func NewBooking(
 		EventID:    eventID,
 		UserID:     userID,
 		CreatedAt:  createdAt,
-		Canceled:   canceled,
 		CanceledAt: canceledAt,
 	}
 }
@@ -43,7 +40,6 @@ func NewUninitializedBooking(
 		eventID,
 		userID,
 		UninitializedCreatedAt,
-		UninitializedCanceled,
 		UninitializedCanceledAt,
 	)
 }

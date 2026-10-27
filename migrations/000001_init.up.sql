@@ -33,12 +33,11 @@ CREATE TABLE booking.events (
     event_address   VARCHAR(1000)                                   NOT NULL,
     event_time      TIMESTAMP                                       NOT NULL,
     owners_user_id  INTEGER         REFERENCES booking.users(id)    NOT NULL,
-    canceled        BOOLEAN                                         NOT NULL    DEFAULT FALSE,
     canceled_at     TIMESTAMPTZ                                                 DEFAULT NULL,
     CHECK( 
-        (canceled = FALSE AND canceled_at IS NULL)
+        (canceled_at IS NULL)
         OR 
-        (canceled AND canceled_at IS NOT NULL AND canceled_at > created_at)
+        (canceled_at IS NOT NULL AND canceled_at > created_at)
     )
 );
 
@@ -48,11 +47,22 @@ CREATE TABLE booking.bookings (
     event_id    INTEGER     REFERENCES booking.events(id)   NOT NULL,
     user_id     INTEGER     REFERENCES booking.users(id)    NOT NULL,
     created_at  TIMESTAMPTZ                                 NOT NULL     DEFAULT now(),
-    canceled    BOOLEAN                                     NOT NULL     DEFAULT FALSE,
     canceled_at TIMESTAMPTZ                                              DEFAULT NULL
     CHECK( 
-        (canceled = FALSE AND canceled_at IS NULL)
+        (canceled_at IS NULL)
         OR 
-        (canceled AND canceled_at IS NOT NULL AND canceled_at >= created_at)
+        (canceled_at IS NOT NULL AND canceled_at >= created_at)
     )
 );
+
+
+CREATE INDEX idx_bookings_event_active
+    ON booking.bookings (event_id, user_id)
+    WHERE canceled_at IS NULL;
+
+
+CREATE INDEX idx_bookings_event_id 
+    ON booking.bookings (event_id);
+
+CREATE INDEX idx_bookings_owner_id
+    ON booking.bookings (user_id);

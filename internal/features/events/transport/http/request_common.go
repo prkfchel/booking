@@ -7,46 +7,6 @@ import (
 	"net/http"
 )
 
-func getLimitOffsetQueryParams(r *http.Request) (*int, *int, error) {
-
-	const (
-		limitQueryParamKey  = "limit"
-		offsetQueryParamKey = "offset"
-	)
-
-	limit, err := core_http_request.GetIntQueryParams(r, limitQueryParamKey)
-	if err != nil {
-		return nil, nil, fmt.Errorf(
-			"failed to get limit query param: %w",
-			err,
-		)
-	}
-
-	offset, err := core_http_request.GetIntQueryParams(r, offsetQueryParamKey)
-	if err != nil {
-		return nil, nil, fmt.Errorf(
-			"failed to get offset query param: %w",
-			err,
-		)
-	}
-
-	if limit != nil && *limit < 1 {
-		return nil, nil, fmt.Errorf(
-			"limit query param must be positive %w",
-			core_errors.ErrInvalidArgument,
-		)
-	}
-
-	if offset != nil && *offset < 0 {
-		return nil, nil, fmt.Errorf(
-			"offset query param cant be negative: %w",
-			core_errors.ErrInvalidArgument,
-		)
-	}
-
-	return limit, offset, nil
-
-}
 
 func getEventIDPathValue(r *http.Request) (int, error) {
 	const eventIdPathValueKey = "id"

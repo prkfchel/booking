@@ -22,8 +22,16 @@ import (
 	"syscall"
 	"time"
 
+	_ "booking/docs"
+
 	"go.uber.org/zap"
 )
+
+// @title 			Booking API
+// @version 		1.0
+// @description 	Booking App REST-API scheme
+// @host 			127.0.0.1:5050
+// @BasePath 		/api/v1
 
 func main() {
 	cfg := core_config.NewConfigMust()
@@ -79,6 +87,8 @@ func main() {
 	httpServer.RegisterAPIRoutes(
 		apiVersionRouterV1,
 	)
+
+	httpServer.RegisterSwagger()
 
 	if err := httpServer.Run(ctx); err != nil {
 		logger.Error("server error", zap.Error(err))

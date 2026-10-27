@@ -65,7 +65,7 @@ func Trace() MiddleWare {
 			log.Debug(
 				"<<< done http request",
 				zap.Int("status_code", rw.GetStatusCode()),
-				zap.Duration("latenct", time.Now().Sub(before)),
+				zap.Duration("latenct", time.Since(before)),
 			)
 		})
 	}

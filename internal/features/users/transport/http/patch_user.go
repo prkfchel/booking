@@ -20,6 +20,25 @@ type PatchUserRequestDTO struct {
 
 type PatchUserResponseDTO UserResponseDTO
 
+// PatchUser     godoc
+// @Summary      Изменение пользователя
+// @Description  Изменение информации об уже существующем в системе пользователе
+// @Description  ### Логика обновления полей (Three-state logic):
+// @Description  1. **Поле не передано**: `phone_number` игнорируется, значение в БД не меняется
+// @Description  2. **Явно передано значение**: `"phone_number": "+711122233344"` - устанавливает новый номер телефона в БД
+// @Description  3. **Передан null**: `"phone_number": null` - очищает поле в БД (set to NULL)
+// @Description  Ограничения: `full_name` не может быть выставлен как null
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        id      path string           		true       "ID изменяемого пользователя" Format(uuid)
+// @Param        request body PatchUserRequestDTO 	true       "PatchUser тело запроса"
+// @Success      200 {object} PatchUserResponseDTO             "Успешно изменённый пользователь"
+// @Failure      400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure      404 {object} core_http_response.ErrorResponse "User not found"
+// @Failure      409 {object} core_http_response.ErrorResponse "Conflict"
+// @Failure      500 {object} core_http_response.ErrorResponse "Internal server error"
+// @Router       /users/{id} [patch]
 func (h *UsersHTTPHandler) PatchUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)
