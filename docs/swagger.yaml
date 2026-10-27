@@ -32,9 +32,6 @@ definitions:
     type: object
   internal_features_bookings_transport_http.BookResponseDTO:
     properties:
-      canceled:
-        example: false
-        type: boolean
       canceled_at:
         example: "null"
         type: string
@@ -53,9 +50,6 @@ definitions:
     type: object
   internal_features_bookings_transport_http.cancelBookResponseDTO:
     properties:
-      canceled:
-        example: false
-        type: boolean
       canceled_at:
         example: "null"
         type: string
@@ -86,9 +80,6 @@ definitions:
     type: object
   internal_features_bookings_transport_http.createBookResponseDTO:
     properties:
-      canceled:
-        example: false
-        type: boolean
       canceled_at:
         example: "null"
         type: string
@@ -107,9 +98,6 @@ definitions:
     type: object
   internal_features_bookings_transport_http.getBookResponseDTO:
     properties:
-      canceled:
-        example: false
-        type: boolean
       canceled_at:
         example: "null"
         type: string
@@ -131,9 +119,6 @@ definitions:
       address:
         example: st. Pushkina, b. Kalatushkina
         type: string
-      canceled:
-        example: false
-        type: boolean
       canceled_at:
         example: "null"
         type: string
@@ -167,9 +152,6 @@ definitions:
       address:
         example: st. Pushkina, b. Kalatushkina
         type: string
-      canceled:
-        example: false
-        type: boolean
       canceled_at:
         example: "null"
         type: string
@@ -235,9 +217,6 @@ definitions:
       address:
         example: st. Pushkina, b. Kalatushkina
         type: string
-      canceled:
-        example: false
-        type: boolean
       canceled_at:
         example: "null"
         type: string
@@ -271,9 +250,6 @@ definitions:
       address:
         example: st. Pushkina, b. Kalatushkina
         type: string
-      canceled:
-        example: false
-        type: boolean
       canceled_at:
         example: "null"
         type: string
@@ -329,9 +305,6 @@ definitions:
       address:
         example: st. Pushkina, b. Kalatushkina
         type: string
-      canceled:
-        example: false
-        type: boolean
       canceled_at:
         example: "null"
         type: string

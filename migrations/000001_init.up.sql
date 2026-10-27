@@ -54,3 +54,15 @@ CREATE TABLE booking.bookings (
         (canceled_at IS NOT NULL AND canceled_at >= created_at)
     )
 );
+
+
+CREATE INDEX idx_bookings_event_active
+    ON booking.bookings (event_id, user_id)
+    WHERE canceled_at IS NULL;
+
+
+CREATE INDEX idx_bookings_event_id 
+    ON booking.bookings (event_id);
+
+CREATE INDEX idx_bookings_owner_id
+    ON booking.bookings (user_id);

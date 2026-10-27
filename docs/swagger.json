@@ -779,10 +779,6 @@
         "internal_features_bookings_transport_http.BookResponseDTO": {
             "type": "object",
             "properties": {
-                "canceled": {
-                    "type": "boolean",
-                    "example": false
-                },
                 "canceled_at": {
                     "type": "string",
                     "example": "null"
@@ -808,10 +804,6 @@
         "internal_features_bookings_transport_http.cancelBookResponseDTO": {
             "type": "object",
             "properties": {
-                "canceled": {
-                    "type": "boolean",
-                    "example": false
-                },
                 "canceled_at": {
                     "type": "string",
                     "example": "null"
@@ -854,10 +846,6 @@
         "internal_features_bookings_transport_http.createBookResponseDTO": {
             "type": "object",
             "properties": {
-                "canceled": {
-                    "type": "boolean",
-                    "example": false
-                },
                 "canceled_at": {
                     "type": "string",
                     "example": "null"
@@ -883,10 +871,6 @@
         "internal_features_bookings_transport_http.getBookResponseDTO": {
             "type": "object",
             "properties": {
-                "canceled": {
-                    "type": "boolean",
-                    "example": false
-                },
                 "canceled_at": {
                     "type": "string",
                     "example": "null"
@@ -915,10 +899,6 @@
                 "address": {
                     "type": "string",
                     "example": "st. Pushkina, b. Kalatushkina"
-                },
-                "canceled": {
-                    "type": "boolean",
-                    "example": false
                 },
                 "canceled_at": {
                     "type": "string",
@@ -964,10 +944,6 @@
                 "address": {
                     "type": "string",
                     "example": "st. Pushkina, b. Kalatushkina"
-                },
-                "canceled": {
-                    "type": "boolean",
-                    "example": false
                 },
                 "canceled_at": {
                     "type": "string",
@@ -1055,10 +1031,6 @@
                     "type": "string",
                     "example": "st. Pushkina, b. Kalatushkina"
                 },
-                "canceled": {
-                    "type": "boolean",
-                    "example": false
-                },
                 "canceled_at": {
                     "type": "string",
                     "example": "null"
@@ -1103,10 +1075,6 @@
                 "address": {
                     "type": "string",
                     "example": "st. Pushkina, b. Kalatushkina"
-                },
-                "canceled": {
-                    "type": "boolean",
-                    "example": false
                 },
                 "canceled_at": {
                     "type": "string",
@@ -1185,10 +1153,6 @@
                 "address": {
                     "type": "string",
                     "example": "st. Pushkina, b. Kalatushkina"
-                },
-                "canceled": {
-                    "type": "boolean",
-                    "example": false
                 },
                 "canceled_at": {
                     "type": "string",

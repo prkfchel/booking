@@ -785,10 +785,6 @@ const docTemplate = `{
         "internal_features_bookings_transport_http.BookResponseDTO": {
             "type": "object",
             "properties": {
-                "canceled": {
-                    "type": "boolean",
-                    "example": false
-                },
                 "canceled_at": {
                     "type": "string",
                     "example": "null"
@@ -814,10 +810,6 @@ const docTemplate = `{
         "internal_features_bookings_transport_http.cancelBookResponseDTO": {
             "type": "object",
             "properties": {
-                "canceled": {
-                    "type": "boolean",
-                    "example": false
-                },
                 "canceled_at": {
                     "type": "string",
                     "example": "null"
@@ -860,10 +852,6 @@ const docTemplate = `{
         "internal_features_bookings_transport_http.createBookResponseDTO": {
             "type": "object",
             "properties": {
-                "canceled": {
-                    "type": "boolean",
-                    "example": false
-                },
                 "canceled_at": {
                     "type": "string",
                     "example": "null"
@@ -889,10 +877,6 @@ const docTemplate = `{
         "internal_features_bookings_transport_http.getBookResponseDTO": {
             "type": "object",
             "properties": {
-                "canceled": {
-                    "type": "boolean",
-                    "example": false
-                },
                 "canceled_at": {
                     "type": "string",
                     "example": "null"
@@ -921,10 +905,6 @@ const docTemplate = `{
                 "address": {
                     "type": "string",
                     "example": "st. Pushkina, b. Kalatushkina"
-                },
-                "canceled": {
-                    "type": "boolean",
-                    "example": false
                 },
                 "canceled_at": {
                     "type": "string",
@@ -970,10 +950,6 @@ const docTemplate = `{
                 "address": {
                     "type": "string",
                     "example": "st. Pushkina, b. Kalatushkina"
-                },
-                "canceled": {
-                    "type": "boolean",
-                    "example": false
                 },
                 "canceled_at": {
                     "type": "string",
@@ -1061,10 +1037,6 @@ const docTemplate = `{
                     "type": "string",
                     "example": "st. Pushkina, b. Kalatushkina"
                 },
-                "canceled": {
-                    "type": "boolean",
-                    "example": false
-                },
                 "canceled_at": {
                     "type": "string",
                     "example": "null"
@@ -1109,10 +1081,6 @@ const docTemplate = `{
                 "address": {
                     "type": "string",
                     "example": "st. Pushkina, b. Kalatushkina"
-                },
-                "canceled": {
-                    "type": "boolean",
-                    "example": false
                 },
                 "canceled_at": {
                     "type": "string",
@@ -1191,10 +1159,6 @@ const docTemplate = `{
                 "address": {
                     "type": "string",
                     "example": "st. Pushkina, b. Kalatushkina"
-                },
-                "canceled": {
-                    "type": "boolean",
-                    "example": false
                 },
                 "canceled_at": {
                     "type": "string",
