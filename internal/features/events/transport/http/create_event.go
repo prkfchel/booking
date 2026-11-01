@@ -11,7 +11,7 @@ import (
 
 type createEventRequestDTO struct {
 	Title        string    `json:"title" validate:"required,min=2,max=500" example:"concert"`
-	Description  *string   `json:"description" validate:"omitempty,min=2" example:"interesting concert and show"`
+	Description  *string   `json:"description" validate:"omitempty,min=5" example:"interesting concert and show"`
 	TotalTickets int       `json:"total_tickets" validate:"required,min=1" example:"100"`
 	Address      string    `json:"address" validate:"required,min=5" example:"st. Pushkina, b. Kalatushkina"`
 	StartsAt     time.Time `json:"starts_at" validate:"required" example:"2026-11-10T19:30:00Z"`
@@ -29,6 +29,7 @@ type createEventResponseDTO EventResponseDTO
 // @Param        request body createEventRequestDTO true 		"CreateEvent тело запроса"
 // @Success      201 {object} createEventResponseDTO 			"Успешно созданное событие"
 // @Failure      400 {object} core_http_response.ErrorResponse  "Bad request"
+// @Failure		 404 {object} core_http_response.ErrorResponse  "Not found"
 // @Failure      500 {object} core_http_response.ErrorResponse  "Internal server error"
 // @Router       /events [post]
 func (h *EventsHTTPHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +45,7 @@ func (h *EventsHTTPHandler) CreateEvent(w http.ResponseWriter, r *http.Request) 
 
 	event := DomainFromDTO(request)
 
-	createdEvent, err := h.Sevice.CreateEvent(ctx, event)
+	createdEvent, err := h.Service.CreateEvent(ctx, event)
 	if err != nil {
 		responseHandler.ErrorResponse(err, "create event")
 		return

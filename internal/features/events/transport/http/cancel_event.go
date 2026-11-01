@@ -13,11 +13,13 @@ type cancelEventResponseDTO EventResponseDTO
 // @Description  Отменить событие в системе
 // @Tags         events
 // @Produce      json
-// @Param        id  path string true                          	"ID отменяемого события" Format(uuid)
-// @Success      201 {object} cancelEventResponseDTO 			"Событие успешно отменено"
+// @Param        id  path int true                          	"ID отменяемого события" Format(uuid)
+// @Success      200 {object} cancelEventResponseDTO 			"Событие успешно отменено"
 // @Failure      400 {object} core_http_response.ErrorResponse  "Bad request"
+// @Failure		 404 {object} core_http_response.ErrorResponse  "Not found"
+// @Failure      409 {object} core_http_response.ErrorResponse "Conflict"
 // @Failure      500 {object} core_http_response.ErrorResponse  "Internal server error"
-// @Router       /events/cancel [post]
+// @Router       /events/{id}/cancel [post]
 func (h *EventsHTTPHandler) CancelEvent(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)
@@ -29,7 +31,7 @@ func (h *EventsHTTPHandler) CancelEvent(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	event, err := h.Sevice.CancelEvent(ctx, id)
+	event, err := h.Service.CancelEvent(ctx, id)
 	if err != nil {
 		responseHandler.ErrorResponse(err, "failed to cancel event")
 		return

@@ -2,6 +2,7 @@ package users_http_transport
 
 import (
 	core_logger "booking/internal/core/logger"
+	core_http_request "booking/internal/core/transport/http/request"
 	core_http_response "booking/internal/core/transport/http/response"
 	"net/http"
 )
@@ -24,7 +25,7 @@ func (h *UsersHTTPHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(ctx)
 	responseHandler := core_http_response.NewHTTPResponseWriter(log, w)
 
-	limit, offset, err := GetLimitOffsetQueryParams(r)
+	limit, offset, err := core_http_request.GetLimitOffsetQueryParams(r)
 
 	if err != nil {
 		responseHandler.ErrorResponse(

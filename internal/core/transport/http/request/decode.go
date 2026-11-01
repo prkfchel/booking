@@ -23,7 +23,6 @@ func DecodeAndValidateRequest(r *http.Request, dest any) error {
 			core_errors.ErrInvalidArgument,
 		)
 	}
-	fmt.Println(dest)
 	var err error
 
 	v, ok := dest.(validatable)

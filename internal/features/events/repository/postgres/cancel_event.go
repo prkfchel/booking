@@ -26,18 +26,22 @@ func (r *EventsRepository) CancelEvent(
 	defer tx.Rollback(ctx)
 
 	queryEventCheck := `
-		SELECT event_time <= now()
+		SELECT start_at <= now(), canceled_at IS NOT NULL
 		FROM booking.events
-		WHERE id = $1 AND canceled_at IS NULL
+		WHERE id = $1
 		FOR UPDATE;
 	`
 
 	row := tx.QueryRow(ctx, queryEventCheck, eventID)
 
-	var passed bool
+	var (
+		passed          bool
+		alreadyCanceled bool
+	)
 
 	err = row.Scan(
 		&passed,
+		&alreadyCanceled,
 	)
 	if err != nil {
 		if errors.Is(err, core_postgres_pool.ErrNoRows) {
@@ -56,7 +60,16 @@ func (r *EventsRepository) CancelEvent(
 
 	if passed {
 		return domain.Event{}, fmt.Errorf(
-			"event is already passed: %w",
+			"event with id='%d' is already passed: %w",
+			eventID,
+			core_errors.ErrConflict,
+		)
+	}
+
+	if alreadyCanceled {
+		return domain.Event{}, fmt.Errorf(
+			"event with id='%d' is already canceled: %w",
+			eventID,
 			core_errors.ErrConflict,
 		)
 	}
@@ -75,7 +88,7 @@ func (r *EventsRepository) CancelEvent(
 			total_tickets, 
 			created_at, 
 			event_address, 
-			event_time, 
+			start_at, 
 			owners_user_id,
 			canceled_at;
 	`
@@ -104,10 +117,17 @@ func (r *EventsRepository) CancelEvent(
 	}
 
 	queryCancelEventsBookings := `
-		UPDATE booking.bookings 
-		SET 
-			canceled_at = now()
-		WHERE event_id = $1 AND canceled_at IS NULL;
+		WITH to_cancel AS (
+			SELECT id
+			FROM booking.bookings
+			WHERE event_id = $1 AND canceled_at IS NULL
+			ORDER BY id
+			FOR UPDATE
+		)
+		UPDATE booking.bookings b
+		SET canceled_at = now()
+		FROM to_cancel
+		WHERE b.id = to_cancel.id;
 	`
 
 	if _, err := tx.Exec(ctx, queryCancelEventsBookings, eventID); err != nil {

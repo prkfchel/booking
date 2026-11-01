@@ -13,11 +13,13 @@ type cancelBookResponseDTO BookResponseDTO
 // @Description  Отменить бронь в системе
 // @Tags         bookings
 // @Produce      json
-// @Param        id  path string true                          	"ID отменяемой брони" Format(uuid)
-// @Success      201 {object} cancelBookResponseDTO 			"Бронь успешно отменена"
+// @Param        id  path int true                          	"ID отменяемой брони" Format(uuid)
+// @Success      200 {object} cancelBookResponseDTO 			"Бронь успешно отменена"
 // @Failure      400 {object} core_http_response.ErrorResponse  "Bad request"
+// @Failure		 404 {object} core_http_response.ErrorResponse  "Not found"
+// @Failure      409 {object} core_http_response.ErrorResponse  "Conflict"
 // @Failure      500 {object} core_http_response.ErrorResponse  "Internal server error"
-// @Router       /books/cancel [post]
+// @Router       /books/{id}/cancel [post]
 func (h *BookHTTPHandler) CancelBook(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)

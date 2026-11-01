@@ -27,6 +27,7 @@ func (h *HTTPResponseHandler) JSONResponse(
 	statusCode int,
 	responseBody any,
 ) {
+	h.rw.Header().Set("Content-Type", "application/json; charset=utf-8")
 	h.rw.WriteHeader(statusCode)
 
 	if err := json.NewEncoder(h.rw).Encode(responseBody); err != nil {
@@ -72,9 +73,19 @@ func (h *HTTPResponseHandler) errorResponse(
 	err error,
 	msg string,
 ) {
-	response := ErrorResponse{
-		Error:   err.Error(),
-		Message: msg,
+
+	var response ErrorResponse
+
+	if statusCode >= http.StatusInternalServerError {
+		response = ErrorResponse{
+			Error:   "",
+			Message: msg,
+		}
+	} else {
+		response = ErrorResponse{
+			Error:   err.Error(),
+			Message: msg,
+		}
 	}
 
 	h.JSONResponse(

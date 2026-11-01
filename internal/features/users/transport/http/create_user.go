@@ -11,7 +11,7 @@ import (
 type CreateUserRequestDTO struct {
 	Name        string  `json:"name" validate:"required,min=3,max=100" example:"Ivan Ivanov"`
 	PhoneNumber *string `json:"phone_number" validate:"omitempty,min=10,max=15" example:"+79998887766"`
-	Mail        *string `json:"mail"  validate:"omitempty,min=9,max=100" example:"user@mail.com"`
+	Mail        *string `json:"mail"`
 }
 type CreateUserResponseDTO UserResponseDTO
 
@@ -24,6 +24,7 @@ type CreateUserResponseDTO UserResponseDTO
 // @Param        request body CreateUserRequestDTO true "CreateUser тело запроса"
 // @Success      201 {object} CreateUserResponseDTO "Успешно созданный пользователь"
 // @Failure      400 {object} core_http_response.ErrorResponse "Bad request"
+// @Failure      409 {object} core_http_response.ErrorResponse "Conflict"
 // @Failure      500 {object} core_http_response.ErrorResponse "Internal server error"
 // @Router       /users [post]
 func (h *UsersHTTPHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -40,7 +41,7 @@ func (h *UsersHTTPHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	user := fromDTOToDomain(CreateUserRequestDTO(requestDTO))
 
-	createdUser, err := h.Service.CreateUser(user, ctx)
+	createdUser, err := h.Service.CreateUser(ctx, user)
 
 	if err != nil {
 		responseHandler.ErrorResponse(err, "create user")

@@ -8,12 +8,12 @@ import (
 )
 
 type EventsHTTPHandler struct {
-	Sevice EventsService
+	Service EventsService
 }
 
 func NewEventsHTTPHandler(service EventsService) *EventsHTTPHandler {
 	return &EventsHTTPHandler{
-		Sevice: service,
+		Service: service,
 	}
 }
 

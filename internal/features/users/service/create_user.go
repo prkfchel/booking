@@ -7,8 +7,8 @@ import (
 )
 
 func (s *UsersService) CreateUser(
-	user domain.User,
 	ctx context.Context,
+	user domain.User,
 ) (domain.User, error) {
 	if err := user.Validate(); err != nil {
 		return domain.User{}, fmt.Errorf(

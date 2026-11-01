@@ -11,18 +11,18 @@ import (
 
 type getBooksResponseDTO []BookResponseDTO
 
-// GetEvents     godoc
+// GetBooks     godoc
 // @Summary      Список броней
 // @Description  Просмотр списка броней с опциональной пагинацией и фильтрацией по пользователю и событию и времяни создания
 // @Tags         bookings
 // @Produce      json
-// @Param        limit  query int false                        "Размер страницы с бронями"
-// @Param        offset query int false                        "Смещение страницы с бронями"
-// @Param        dateFrom  query time false                    "Начало временного интервала"
-// @Param        dateTo query int false                        "Конец временного интервала"
-// @Param        userId query int false                        "ID владельца брони"
-// @Param        eventId query int false                       "ID события"
-// @Success      200 {object} getBooksResponseDTO             "Успешное получение списка броней"
+// @Param        limit  	query int 	false                  "Размер страницы с бронями"
+// @Param        offset 	query int 	false                  "Смещение страницы с бронями"
+// @Param        dateFrom 	query string 	false                  "Начало временного интервала"
+// @Param        dateTo  	query string 	false                  "Конец временного интервала"
+// @Param        userId  	query int 	false                  "ID владельца брони"
+// @Param        eventId 	query int 	false                  "ID события"
+// @Success      200 {object} getBooksResponseDTO              "Успешное получение списка броней"
 // @Failure      400 {object} core_http_response.ErrorResponse "Bad request"
 // @Failure      500 {object} core_http_response.ErrorResponse "Internal server error"
 // @Router       /books [get]

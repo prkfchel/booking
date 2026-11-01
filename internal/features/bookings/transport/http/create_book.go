@@ -21,9 +21,11 @@ type createBookResponseDTO BookResponseDTO
 // @Tags         bookings
 // @Accept       json
 // @Produce      json
-// @Param        request body createBookRequestDTO true 		"CreateEvent тело запроса"
+// @Param        request body createBookRequestDTO true 		"CreateBook тело запроса"
 // @Success      201 {object} createBookResponseDTO 			"Успешно созданная бронь"
 // @Failure      400 {object} core_http_response.ErrorResponse  "Bad request"
+// @Failure		 404 {object} core_http_response.ErrorResponse  "Not found"
+// @Failure      409 {object} core_http_response.ErrorResponse  "Conflict"
 // @Failure      500 {object} core_http_response.ErrorResponse  "Internal server error"
 // @Router       /books [post]
 func (h *BookHTTPHandler) CreateBook(w http.ResponseWriter, r *http.Request) {

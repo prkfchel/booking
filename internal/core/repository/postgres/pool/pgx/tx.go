@@ -35,12 +35,12 @@ func (tx *pgxTx) Query(ctx context.Context, sql string, args ...any) (core_postg
 		return pgxRows{}, mapErrors(err)
 	}
 
-	return rows, nil
+	return pgxRows{Rows: rows}, nil
 }
 
 func (tx *pgxTx) QueryRow(ctx context.Context, sql string, args ...any) core_postgres_pool.Row {
 	row := tx.Tx.QueryRow(ctx, sql, args...)
-	return row
+	return pgxRow{Row: row}
 }
 
 func (tx *pgxTx) Exec(ctx context.Context, sql string, arguments ...any) (core_postgres_pool.CommandTag, error) {
@@ -49,5 +49,5 @@ func (tx *pgxTx) Exec(ctx context.Context, sql string, arguments ...any) (core_p
 		return pgxCommandTag{}, mapErrors(err)
 	}
 
-	return commandTag, nil
+	return pgxCommandTag{CommandTag: commandTag}, nil
 }

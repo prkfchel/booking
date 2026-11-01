@@ -19,8 +19,8 @@ func NewHTTPUsersHandler(s UsersService) *UsersHTTPHandler {
 
 type UsersService interface {
 	CreateUser(
-		user domain.User,
 		ctx context.Context,
+		user domain.User,
 	) (domain.User, error)
 
 	GetUsers(

@@ -13,7 +13,7 @@ CREATE TABLE booking.users (
                                                                     mail ~ '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
                                                                     AND
                                                                     char_length(mail) BETWEEN 9 AND 100),
-    created_at      TIMESTAMPTZ                 NOT NULL,
+    created_at      TIMESTAMPTZ                 NOT NULL        DEFAULT now(),   
     deleted_at      TIMESTAMPTZ                                 DEFAULT NULL,
     CHECK(
         (deleted_at IS NULL)
@@ -27,13 +27,13 @@ CREATE TABLE booking.events (
     id              SERIAL          PRIMARY KEY,
     version         BIGINT                                          NOT NULL    DEFAULT 1,
     title           VARCHAR(500)                                    NOT NULL    CHECK(char_length(title) BETWEEN 2 AND 500),
-    description     TEXT                                                        CHECK(char_length(description) > 5),
+    description     TEXT                                                        CHECK(char_length(description) >= 5),
     total_tickets   INTEGER                                         NOT NULL    CHECK(total_tickets > 0),
     created_at      TIMESTAMPTZ                                     NOT NULL    DEFAULT now(),
     event_address   VARCHAR(1000)                                   NOT NULL,
-    event_time      TIMESTAMP                                       NOT NULL,
+    start_at        TIMESTAMPTZ                                     NOT NULL,
     owners_user_id  INTEGER         REFERENCES booking.users(id)    NOT NULL,
-    canceled_at     TIMESTAMPTZ                                                 DEFAULT NULL,
+    canceled_at     TIMESTAMPTZ                                                 DEFAULT NULL
     CHECK( 
         (canceled_at IS NULL)
         OR 
@@ -60,9 +60,11 @@ CREATE INDEX idx_bookings_event_active
     ON booking.bookings (event_id, user_id)
     WHERE canceled_at IS NULL;
 
-
 CREATE INDEX idx_bookings_event_id 
     ON booking.bookings (event_id);
 
-CREATE INDEX idx_bookings_owner_id
+CREATE INDEX idx_bookings_user_id
     ON booking.bookings (user_id);
+
+CREATE INDEX idx_events_owner_user_id 
+    ON booking.events (owners_user_id);

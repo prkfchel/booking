@@ -9,25 +9,20 @@ import (
 	"net/http"
 )
 
-type getEventsRequestDTO struct {
-	Title   *string `json:"title" example:"concert"`
-	Address *string `json:"address" example:"st. Pushkina, b. Kalatushkina"`
-}
-
 type getEventsResponseDTO []EventResponseDTO
 
 // GetEvents     godoc
 // @Summary      Список событий
-// @Description  Просмотр списка событий с опциональной пагинацией и фильтрацией по названию и аддресу, времяни проведениря и id организатора
+// @Description  Просмотр списка событий с опциональной пагинацией и фильтрацией по названию и адресу, времяни проведениря и id организатора
 // @Tags         events
-// @Accept       json
 // @Produce      json
-// @Param        limit  query int false                        "Размер страницы с событиями"
-// @Param        offset query int false                        "Смещение страницы с событиями"
-// @Param        dateFrom  query time false                    "Начало временного интервала"
-// @Param        dateTo query int false                        "Конец временного интервала"
-// @Param        ownerId query int false                      "ID организатора мероприятия"
-// @Param        request body getEventsRequestDTO true 		   "GetEvents тело запроса"
+// @Param        limit  	query int false                    "Размер страницы с событиями"
+// @Param        offset 	query int false                    "Смещение страницы с событиями"
+// @Param        dateFrom 	query string false                 "Начало временного интервала"
+// @Param        dateTo 	query string false                 "Конец временного интервала"
+// @Param        ownerId 	query int false                    "ID организатора мероприятия"
+// @Param        title		query string false				   "Название мероприятия"
+// @Param        address	query string false				   "Адрес мероприятия"
 // @Success      200 {object} getEventsResponseDTO             "Успешное получение списка событий"
 // @Failure      400 {object} core_http_response.ErrorResponse "Bad request"
 // @Failure      500 {object} core_http_response.ErrorResponse "Internal server error"
@@ -37,20 +32,13 @@ func (h *EventsHTTPHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(ctx)
 	responseHandler := core_http_response.NewHTTPResponseWriter(log, w)
 
-	var request getEventsRequestDTO
-
-	if err := core_http_request.DecodeAndValidateRequest(r, &request); err != nil {
-		responseHandler.ErrorResponse(err, "failed to decode request json")
-		return
-	}
-
-	filter, err := GetEventsFilter(r, request)
+	filter, err := GetEventsFilter(r)
 	if err != nil {
 		responseHandler.ErrorResponse(err, "failed to get filter params")
 		return
 	}
 
-	events, err := h.Sevice.GetEvents(ctx, filter)
+	events, err := h.Service.GetEvents(ctx, filter)
 	if err != nil {
 		responseHandler.ErrorResponse(err, "failed to get events")
 		return
@@ -61,7 +49,7 @@ func (h *EventsHTTPHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
 	responseHandler.JSONResponse(http.StatusOK, response)
 }
 
-func GetEventsFilter(r *http.Request, request getEventsRequestDTO) (
+func GetEventsFilter(r *http.Request) (
 	domain.EventsFilter,
 	error,
 ) {
@@ -70,6 +58,8 @@ func GetEventsFilter(r *http.Request, request getEventsRequestDTO) (
 		dateFromQueryParamKey = "dateFrom"
 		dateToQueryParamKey   = "dateTo"
 		ownerIdQueryParamKey  = "ownerId"
+		titleQueryParamKey    = "title"
+		addressQueryParamKey  = "address"
 	)
 
 	limit, offset, err := core_http_request.GetLimitOffsetQueryParams(r)
@@ -104,9 +94,13 @@ func GetEventsFilter(r *http.Request, request getEventsRequestDTO) (
 		)
 	}
 
+	title := core_http_request.GetStringQueryParams(r, titleQueryParamKey)
+
+	address := core_http_request.GetStringQueryParams(r, addressQueryParamKey)
+
 	filter := domain.NewEventsFilter(
-		request.Title,
-		request.Address,
+		title,
+		address,
 		dateFrom,
 		dateTo,
 		ownersUserId,

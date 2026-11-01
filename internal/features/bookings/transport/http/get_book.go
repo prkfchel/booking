@@ -13,10 +13,10 @@ type getBookResponseDTO BookResponseDTO
 // @Description  Получение конкретной брони по ее ID
 // @Tags         bookings
 // @Produce      json
-// @Param        id  path string true                          	"ID получаемой брони" Format(uuid)
+// @Param        id  path int true                          	"ID получаемой брони" Format(uuid)
 // @Success      200 {object} getBookResponseDTO                "Бронь успешно найдена"
 // @Failure      400 {object} core_http_response.ErrorResponse  "Bad request"
-// @Failure      404 {object} core_http_response.ErrorResponse 	"Event not found"
+// @Failure      404 {object} core_http_response.ErrorResponse 	"Booking not found"
 // @Failure      500 {object} core_http_response.ErrorResponse 	"Internal server error"
 // @Router       /books/{id} [get]
 func (h *BookHTTPHandler) GetBook(w http.ResponseWriter, r *http.Request) {

@@ -3,7 +3,7 @@ package core_http_server
 import (
 	"booking/docs"
 	core_logger "booking/internal/core/logger"
-	core_http_middleware "booking/internal/core/transport/http/middlerware"
+	core_http_middleware "booking/internal/core/transport/http/middleware"
 	"context"
 	"errors"
 	"fmt"
@@ -36,7 +36,7 @@ func NewHTTPServer(
 func (s *HTTPServer) RegisterRoutes(routes ...Route) {
 	for _, route := range routes {
 		path := route.Method + " " + route.Path
-		handler := route.WithMiddlware()
+		handler := route.WithMiddleware()
 
 		s.mux.Handle(path, handler)
 	}
@@ -62,7 +62,7 @@ func (s *HTTPServer) RegisterSwagger() {
 	)
 
 	s.mux.HandleFunc(
-		"swagger/doc.json",
+		"/swagger/doc.json",
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)

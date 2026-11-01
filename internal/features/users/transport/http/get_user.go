@@ -13,7 +13,7 @@ type getUserResponseDTO UserResponseDTO
 // @Description  Получение конкретного пользователя по его ID
 // @Tags         users
 // @Produce      json
-// @Param        id  path string true                          	"ID получаемого пользователя" Format(uuid)
+// @Param        id  path int true                          	"ID получаемого пользователя" Format(uuid)
 // @Success      200 {object} getUserResponseDTO                "Пользователь успешно найден"
 // @Failure      400 {object} core_http_response.ErrorResponse  "Bad request"
 // @Failure      404 {object} core_http_response.ErrorResponse 	"User not found"
@@ -26,7 +26,7 @@ func (h *UsersHTTPHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 
 	id, err := getUserIDPathValue(r)
 	if err != nil {
-		responseHandler.ErrorResponse(err, "filed to get user id")
+		responseHandler.ErrorResponse(err, "failed to get user id")
 		return
 	}
 

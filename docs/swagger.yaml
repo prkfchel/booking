@@ -137,7 +137,7 @@ definitions:
       starts_at:
         example: "2026-11-10T19:30:00Z"
         type: string
-      tite:
+      title:
         example: concert
         type: string
       total_tickets:
@@ -170,7 +170,7 @@ definitions:
       starts_at:
         example: "2026-11-10T19:30:00Z"
         type: string
-      tite:
+      title:
         example: concert
         type: string
       total_tickets:
@@ -188,7 +188,7 @@ definitions:
         type: string
       description:
         example: interesting concert and show
-        minLength: 2
+        minLength: 5
         type: string
       owner_user_id:
         example: 1
@@ -235,7 +235,7 @@ definitions:
       starts_at:
         example: "2026-11-10T19:30:00Z"
         type: string
-      tite:
+      title:
         example: concert
         type: string
       total_tickets:
@@ -245,7 +245,7 @@ definitions:
         example: 3
         type: integer
     type: object
-  internal_features_events_transport_http.getEventReaponseDTO:
+  internal_features_events_transport_http.getEventResponseDTO:
     properties:
       address:
         example: st. Pushkina, b. Kalatushkina
@@ -268,7 +268,7 @@ definitions:
       starts_at:
         example: "2026-11-10T19:30:00Z"
         type: string
-      tite:
+      title:
         example: concert
         type: string
       total_tickets:
@@ -277,15 +277,6 @@ definitions:
       version:
         example: 3
         type: integer
-    type: object
-  internal_features_events_transport_http.getEventsRequestDTO:
-    properties:
-      address:
-        example: st. Pushkina, b. Kalatushkina
-        type: string
-      title:
-        example: concert
-        type: string
     type: object
   internal_features_events_transport_http.patchEventRequestDTO:
     properties:
@@ -323,7 +314,7 @@ definitions:
       starts_at:
         example: "2026-11-10T19:30:00Z"
         type: string
-      tite:
+      title:
         example: concert
         type: string
       total_tickets:
@@ -336,9 +327,6 @@ definitions:
   internal_features_users_transport_http.CreateUserRequestDTO:
     properties:
       mail:
-        example: user@mail.com
-        maxLength: 100
-        minLength: 9
         type: string
       name:
         example: Ivan Ivanov
@@ -358,12 +346,12 @@ definitions:
       created_at:
         example: "2006-10-09T12:55:45.159001Z"
         type: string
-      email:
-        example: user@mail.com
-        type: string
       id:
         example: 10
         type: integer
+      mail:
+        example: user@mail.com
+        type: string
       name:
         example: Ivan Ivanov
         type: string
@@ -388,12 +376,12 @@ definitions:
       created_at:
         example: "2006-10-09T12:55:45.159001Z"
         type: string
-      email:
-        example: user@mail.com
-        type: string
       id:
         example: 10
         type: integer
+      mail:
+        example: user@mail.com
+        type: string
       name:
         example: Ivan Ivanov
         type: string
@@ -409,12 +397,12 @@ definitions:
       created_at:
         example: "2006-10-09T12:55:45.159001Z"
         type: string
-      email:
-        example: user@mail.com
-        type: string
       id:
         example: 10
         type: integer
+      mail:
+        example: user@mail.com
+        type: string
       name:
         example: Ivan Ivanov
         type: string
@@ -430,12 +418,12 @@ definitions:
       created_at:
         example: "2006-10-09T12:55:45.159001Z"
         type: string
-      email:
-        example: user@mail.com
-        type: string
       id:
         example: 10
         type: integer
+      mail:
+        example: user@mail.com
+        type: string
       name:
         example: Ivan Ivanov
         type: string
@@ -466,10 +454,14 @@ paths:
         in: query
         name: offset
         type: integer
+      - description: Начало временного интервала
+        in: query
+        name: dateFrom
+        type: string
       - description: Конец временного интервала
         in: query
         name: dateTo
-        type: integer
+        type: string
       - description: ID владельца брони
         in: query
         name: userId
@@ -503,7 +495,7 @@ paths:
       - application/json
       description: Создать новую бронь в системе
       parameters:
-      - description: CreateEvent тело запроса
+      - description: CreateBook тело запроса
         in: body
         name: request
         required: true
@@ -518,6 +510,14 @@ paths:
             $ref: '#/definitions/internal_features_bookings_transport_http.createBookResponseDTO'
         "400":
           description: Bad request
+          schema:
+            $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
+        "409":
+          description: Conflict
           schema:
             $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
         "500":
@@ -536,7 +536,7 @@ paths:
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
@@ -549,7 +549,7 @@ paths:
           schema:
             $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
         "404":
-          description: Event not found
+          description: Booking not found
           schema:
             $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
         "500":
@@ -559,7 +559,7 @@ paths:
       summary: Получение брони
       tags:
       - bookings
-  /books/cancel:
+  /books/{id}/cancel:
     post:
       description: Отменить бронь в системе
       parameters:
@@ -568,11 +568,11 @@ paths:
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
-        "201":
+        "200":
           description: Бронь успешно отменена
           schema:
             $ref: '#/definitions/internal_features_bookings_transport_http.cancelBookResponseDTO'
@@ -580,53 +580,8 @@ paths:
           description: Bad request
           schema:
             $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
-      summary: Отменить бронь
-      tags:
-      - bookings
-  /event/{id}:
-    patch:
-      consumes:
-      - application/json
-      description: |-
-        Изменение информации об уже существующем в системе событии
-        ### Логика обновления полей (Three-state logic):
-        1. **Поле не передано**: `description` игнорируется, значение в БД не меняется
-        2. **Явно передано значение**: `"description": "событие бла-бла-бла"` - устанавливает новое описание в БД
-        3. **Передан null**: `"description": null` - очищает поле в БД (set to NULL)
-        Ограничения: `title` не может быть выставлен как null
-        Ограничения: `total_tickets` не может быть выставлен как null
-        Ограничения: `address` не может быть выставлен как null
-        Ограничения: `starts_at` не может быть выставлен как null
-      parameters:
-      - description: ID изменяемого события
-        format: uuid
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: PatchEvent тело запроса
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/internal_features_events_transport_http.patchEventRequestDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Успешно изменённый пользователь
-          schema:
-            $ref: '#/definitions/internal_features_events_transport_http.patchEventResponseDTO'
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
         "404":
-          description: event not found
+          description: Not found
           schema:
             $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
         "409":
@@ -637,15 +592,13 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
-      summary: Изменение события
+      summary: Отменить бронь
       tags:
-      - events
+      - bookings
   /events:
     get:
-      consumes:
-      - application/json
       description: Просмотр списка событий с опциональной пагинацией и фильтрацией
-        по названию и аддресу, времяни проведениря и id организатора
+        по названию и адресу, времяни проведениря и id организатора
       parameters:
       - description: Размер страницы с событиями
         in: query
@@ -655,20 +608,26 @@ paths:
         in: query
         name: offset
         type: integer
+      - description: Начало временного интервала
+        in: query
+        name: dateFrom
+        type: string
       - description: Конец временного интервала
         in: query
         name: dateTo
-        type: integer
+        type: string
       - description: ID организатора мероприятия
         in: query
         name: ownerId
         type: integer
-      - description: GetEvents тело запроса
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/internal_features_events_transport_http.getEventsRequestDTO'
+      - description: Название мероприятия
+        in: query
+        name: title
+        type: string
+      - description: Адрес мероприятия
+        in: query
+        name: address
+        type: string
       produces:
       - application/json
       responses:
@@ -711,6 +670,10 @@ paths:
           description: Bad request
           schema:
             $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
         "500":
           description: Internal server error
           schema:
@@ -727,14 +690,14 @@ paths:
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: событие успешно найдено
           schema:
-            $ref: '#/definitions/internal_features_events_transport_http.getEventReaponseDTO'
+            $ref: '#/definitions/internal_features_events_transport_http.getEventResponseDTO'
         "400":
           description: Bad request
           schema:
@@ -750,7 +713,59 @@ paths:
       summary: Получение события
       tags:
       - events
-  /events/cancel:
+    patch:
+      consumes:
+      - application/json
+      description: |-
+        Изменение информации об уже существующем в системе событии
+        ### Логика обновления полей (Three-state logic):
+        1. **Поле не передано**: `description` игнорируется, значение в БД не меняется
+        2. **Явно передано значение**: `"description": "событие бла-бла-бла"` - устанавливает новое описание в БД
+        3. **Передан null**: `"description": null` - очищает поле в БД (set to NULL)
+        Ограничения: `title` не может быть выставлен как null
+        Ограничения: `total_tickets` не может быть выставлен как null
+        Ограничения: `address` не может быть выставлен как null
+        Ограничения: `starts_at` не может быть выставлен как null
+      parameters:
+      - description: ID изменяемого события
+        format: uuid
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: PatchEvent тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_events_transport_http.patchEventRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешно изменённое событие
+          schema:
+            $ref: '#/definitions/internal_features_events_transport_http.patchEventResponseDTO'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
+        "404":
+          description: event not found
+          schema:
+            $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
+      summary: Изменение события
+      tags:
+      - events
+  /events/{id}/cancel:
     post:
       description: Отменить событие в системе
       parameters:
@@ -759,16 +774,24 @@ paths:
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
-        "201":
+        "200":
           description: Событие успешно отменено
           schema:
             $ref: '#/definitions/internal_features_events_transport_http.cancelEventResponseDTO'
         "400":
           description: Bad request
+          schema:
+            $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
+        "409":
+          description: Conflict
           schema:
             $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
         "500":
@@ -832,6 +855,10 @@ paths:
           description: Bad request
           schema:
             $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/booking_internal_core_transport_http_response.ErrorResponse'
         "500":
           description: Internal server error
           schema:
@@ -848,7 +875,7 @@ paths:
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       responses:
         "204":
           description: Успешное удаление пользователя
@@ -875,7 +902,7 @@ paths:
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
@@ -914,7 +941,7 @@ paths:
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       - description: PatchUser тело запроса
         in: body
         name: request

@@ -2,14 +2,11 @@ package users_http_transport
 
 import (
 	"booking/internal/core/domain"
-	core_errors "booking/internal/core/errors"
 	core_logger "booking/internal/core/logger"
 	core_http_request "booking/internal/core/transport/http/request"
 	core_http_response "booking/internal/core/transport/http/response"
 	core_http_type "booking/internal/core/transport/http/type"
-	"fmt"
 	"net/http"
-	"regexp"
 )
 
 type PatchUserRequestDTO struct {
@@ -31,7 +28,7 @@ type PatchUserResponseDTO UserResponseDTO
 // @Tags         users
 // @Accept       json
 // @Produce      json
-// @Param        id      path string           		true       "ID изменяемого пользователя" Format(uuid)
+// @Param        id      path int           		true       "ID изменяемого пользователя" Format(uuid)
 // @Param        request body PatchUserRequestDTO 	true       "PatchUser тело запроса"
 // @Success      200 {object} PatchUserResponseDTO             "Успешно изменённый пользователь"
 // @Failure      400 {object} core_http_response.ErrorResponse "Bad request"
@@ -78,67 +75,4 @@ func userPatchDomainFromDTO(request PatchUserRequestDTO) domain.PatchUser {
 		request.PhoneNumber.ToDomain(),
 		request.Mail.ToDomain(),
 	)
-}
-
-func (r *PatchUserRequestDTO) Validate() error {
-	if r.Name.Set {
-		if r.Name.Value == nil {
-			return fmt.Errorf(
-				"name cant be set null: %w",
-				core_errors.ErrInvalidArgument,
-			)
-		}
-		nameLen := len([]rune(*r.Name.Value))
-		if nameLen < 3 || nameLen > 100 {
-			return fmt.Errorf(
-				"invalid name length: %d: %w",
-				nameLen,
-				core_errors.ErrInvalidArgument,
-			)
-		}
-	}
-
-	if r.PhoneNumber.Set && r.PhoneNumber.Value != nil {
-		phoneNumberLen := len([]rune(*r.PhoneNumber.Value))
-
-		if phoneNumberLen < 10 || phoneNumberLen > 15 {
-			return fmt.Errorf(
-				"invalid phone number length: %d: %w",
-				phoneNumberLen,
-				core_errors.ErrInvalidArgument,
-			)
-		}
-
-		re := regexp.MustCompile(`^\+[0-9]+$`)
-
-		if !re.MatchString(*r.PhoneNumber.Value) {
-			return fmt.Errorf(
-				"invalid phone number format: %w",
-				core_errors.ErrInvalidArgument,
-			)
-		}
-	}
-
-	if r.Mail.Set && r.Mail.Value != nil {
-		mailLen := len([]rune(*r.Mail.Value))
-
-		if mailLen < 9 || mailLen > 100 {
-			return fmt.Errorf(
-				"invalid mail length: %d: %w",
-				mailLen,
-				core_errors.ErrInvalidArgument,
-			)
-		}
-
-		re := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
-
-		if !re.MatchString(*r.Mail.Value) {
-			return fmt.Errorf(
-				"invalid mail format: %w",
-				core_errors.ErrInvalidArgument,
-			)
-		}
-	}
-
-	return nil
 }

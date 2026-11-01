@@ -10,7 +10,7 @@ import (
 const (
 	eventTitleMinLen       = 2
 	eventTitleMaxLen       = 500
-	eventDescriptionMinLen = 2
+	eventDescriptionMinLen = 5
 	eventAddressMinLen     = 5
 )
 
@@ -124,6 +124,13 @@ func (e *Event) Validate() error {
 		)
 	}
 
+	if e.StartsAt.Before(time.Now()) {
+		return fmt.Errorf(
+			"event must start in the future: %w",
+			core_errors.ErrInvalidArgument,
+		)
+	}
+
 	if e.OwnerUserID < 1 {
 		return fmt.Errorf(
 			"owner user id must be positive number: %d: %w",
@@ -159,7 +166,22 @@ func NewPatchEvent(
 	}
 }
 
+func (p PatchEvent) IsEmpty() bool {
+	return !p.Title.Set &&
+		!p.Description.Set &&
+		!p.StartsAt.Set &&
+		!p.Address.Set &&
+		!p.TotalTickets.Set
+}
+
 func (p PatchEvent) Validate() error {
+
+	if p.IsEmpty() {
+		return fmt.Errorf(
+			"patch is empty: %w",
+			core_errors.ErrInvalidArgument,
+		)
+	}
 	if p.Title.Set && p.Title.Value == nil {
 		return fmt.Errorf(
 			"title can't be set and null: %w",
