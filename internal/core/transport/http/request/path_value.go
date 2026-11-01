@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-func GetIntPathValuese(r *http.Request, key string) (int, error) {
+func GetIntPathValues(r *http.Request, key string) (int, error) {
 	pathValue := r.PathValue(key)
 	if pathValue == "" {
 		return 0, fmt.Errorf(

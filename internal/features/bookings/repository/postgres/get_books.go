@@ -33,7 +33,7 @@ func (r *BookRepository) GetBooks(
 	argsCount := 2
 
 	if filter.EventID != nil {
-		args = append(args, filter.UserID)
+		args = append(args, filter.EventID)
 		argsCount++
 		conditions = append(conditions, fmt.Sprintf("event_id = $%d", argsCount))
 	}

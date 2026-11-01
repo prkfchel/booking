@@ -8,7 +8,7 @@ import (
 type EventResponseDTO struct {
 	ID           int        `json:"id" example:"10"`
 	Version      int        `json:"version" example:"3"`
-	Title        string     `json:"tite" example:"concert"`
+	Title        string     `json:"title" example:"concert"`
 	Description  *string    `json:"description" example:"interesting concert and show"`
 	TotalTickets int        `json:"total_tickets" example:"100"`
 	CreatedAt    time.Time  `json:"created_at" example:"2006-11-10T19:30:00Z"`

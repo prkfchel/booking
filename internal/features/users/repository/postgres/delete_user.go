@@ -55,7 +55,7 @@ func (r *UsersRepository) DeleteUser(
 		SET 
 			version = version + 1,
 			canceled_at = now()
-		WHERE owners_user_id = $1 AND canceled_at IS NULL AND event_time > now();
+		WHERE owners_user_id = $1 AND canceled_at IS NULL AND start_at > now();
 	`
 
 	if _, err = tx.Exec(ctx, queryCancelEvent, userID); err != nil {
@@ -65,33 +65,26 @@ func (r *UsersRepository) DeleteUser(
 		)
 	}
 
-	queryCancelEventsBookings := `
-		UPDATE booking.bookings b
-		SET 
-			canceled_at = now()
-		FROM booking.events e
-		WHERE b.event_id = e.id  
-			AND e.owners_user_id = $1 
-			AND b.canceled_at IS NULL;
-	`
-
-	if _, err = tx.Exec(ctx, queryCancelEventsBookings, userID); err != nil {
-		return fmt.Errorf(
-			"failed to cancel books: %w",
-			err,
+	queryCancelBookings := `
+		WITH to_cancel AS (
+			SELECT b.id
+			FROM booking.bookings b
+			JOIN booking.events e ON e.id = b.event_id
+			WHERE b.canceled_at IS NULL
+				AND e.start_at > now()
+				AND (b.user_id = $1 OR e.owners_user_id = $1)
+			ORDER BY b.id
+			FOR UPDATE OF b
 		)
-	}
-
-	queryCancelUsersBookings := `
 		UPDATE booking.bookings b
-		SET 
-			canceled_at = now()
-		WHERE b.user_id = $1 AND b.canceled_at IS NULL;
+		SET canceled_at = now()
+		FROM to_cancel
+		WHERE b.id = to_cancel.id;
 	`
 
-	if _, err := tx.Exec(ctx, queryCancelUsersBookings, userID); err != nil {
+	if _, err = tx.Exec(ctx, queryCancelBookings, userID); err != nil {
 		return fmt.Errorf(
-			"failed to cancel users books: %w",
+			"failed to cancel bookings: %w",
 			err,
 		)
 	}

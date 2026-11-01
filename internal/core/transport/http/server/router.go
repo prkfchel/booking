@@ -1,7 +1,7 @@
 package core_http_server
 
 import (
-	core_http_middleware "booking/internal/core/transport/http/middlerware"
+	core_http_middleware "booking/internal/core/transport/http/middleware"
 	"fmt"
 	"net/http"
 )
@@ -16,15 +16,15 @@ var (
 
 type APIVersionRouter struct {
 	*http.ServeMux
-	apiVersion  ApiVersion
-	middlerware []core_http_middleware.MiddleWare
+	apiVersion ApiVersion
+	middleware []core_http_middleware.MiddleWare
 }
 
 func NewAPIVersionRouter(apiversion ApiVersion, middleware ...core_http_middleware.MiddleWare) *APIVersionRouter {
 	return &APIVersionRouter{
-		ServeMux:    http.NewServeMux(),
-		apiVersion:  apiversion,
-		middlerware: middleware,
+		ServeMux:   http.NewServeMux(),
+		apiVersion: apiversion,
+		middleware: middleware,
 	}
 }
 
@@ -32,13 +32,13 @@ func (r *APIVersionRouter) RegisterRoutes(routes ...Route) {
 	for _, route := range routes {
 		pattern := fmt.Sprintf("%s %s", route.Method, route.Path)
 
-		r.Handle(pattern, route.WithMiddlware())
+		r.Handle(pattern, route.WithMiddleware())
 	}
 }
 
 func (r *APIVersionRouter) WithMiddleware() http.Handler {
 	return core_http_middleware.ChainMiddleware(
 		r,
-		r.middlerware...,
+		r.middleware...,
 	)
 }

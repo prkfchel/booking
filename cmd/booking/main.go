@@ -4,7 +4,7 @@ import (
 	core_config "booking/internal/core/config"
 	core_logger "booking/internal/core/logger"
 	core_pgx_pool "booking/internal/core/repository/postgres/pool/pgx"
-	core_http_middleware "booking/internal/core/transport/http/middlerware"
+	core_http_middleware "booking/internal/core/transport/http/middleware"
 	core_http_server "booking/internal/core/transport/http/server"
 	bookings_postgres_repository "booking/internal/features/bookings/repository/postgres"
 	bookings_service "booking/internal/features/bookings/service"
@@ -61,8 +61,8 @@ func main() {
 	usersHTTPHandler := users_http_transport.NewHTTPUsersHandler(usersService)
 
 	eventsRepository := events_postgres_repository.NewEventsRepository(pool)
-	eventsServise := events_service.NewEventsService(eventsRepository)
-	eventsHTTPHandler := events_http_transport.NewEventsHTTPHandler(eventsServise)
+	eventsService := events_service.NewEventsService(eventsRepository)
+	eventsHTTPHandler := events_http_transport.NewEventsHTTPHandler(eventsService)
 
 	bookRepository := bookings_postgres_repository.NewBookRepository(pool)
 	bookService := bookings_service.NewBookService(bookRepository)
@@ -73,7 +73,7 @@ func main() {
 	httpServer := core_http_server.NewHTTPServer(
 		httpConfig,
 		logger,
-		core_http_middleware.CORS(),
+		core_http_middleware.CORS(httpConfig.AllowedOrigins),
 		core_http_middleware.RequestID(),
 		core_http_middleware.Logger(logger),
 		core_http_middleware.Trace(),

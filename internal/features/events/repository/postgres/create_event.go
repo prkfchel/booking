@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 )
 
 func (r *EventsRepository) CreateEvent(
@@ -17,17 +16,50 @@ func (r *EventsRepository) CreateEvent(
 	ctx, cancel := context.WithTimeout(ctx, r.Pool.OpTimeout())
 	defer cancel()
 
+	tx, err := r.Pool.Begin(ctx)
+	if err != nil {
+		return domain.Event{}, fmt.Errorf(
+			"failed to create transaction: %w",
+			err,
+		)
+	}
+	defer tx.Rollback(ctx)
+
+	queryCheckOwner := `
+		SELECT 1 FROM booking.users
+		WHERE id = $1 AND deleted_at IS NULL
+		FOR SHARE;
+	`
+
+	var one int
+	row := tx.QueryRow(ctx, queryCheckOwner, event.OwnerUserID)
+
+	err = row.Scan(&one)
+	if err != nil {
+		if errors.Is(err, core_postgres_pool.ErrNoRows) {
+			return domain.Event{}, fmt.Errorf(
+				"user with id='%d': %w",
+				event.OwnerUserID,
+				core_errors.ErrNotFound,
+			)
+		}
+
+		return domain.Event{}, fmt.Errorf(
+			"scan error: %w",
+			err,
+		)
+	}
+
 	queryCreateEvent := `
 		INSERT INTO booking.events (
 			title, 
 			description, 
 			total_tickets, 
 			event_address, 
-			event_time, 
-			owners_user_id,
-			created_at
+			start_at, 
+			owners_user_id
 		)
-		VALUES($1, $2, $3, $4, $5, $6, $7)
+		VALUES($1, $2, $3, $4, $5, $6)
 		RETURNING 
 			id, 
 			version, 
@@ -36,11 +68,11 @@ func (r *EventsRepository) CreateEvent(
 			total_tickets, 
 			created_at, 
 			event_address, 
-			event_time, 
+			start_at, 
 			owners_user_id,
 			canceled_at;
 	`
-	row := r.Pool.QueryRow(
+	row = tx.QueryRow(
 		ctx,
 		queryCreateEvent,
 		event.Title,
@@ -49,12 +81,11 @@ func (r *EventsRepository) CreateEvent(
 		event.Address,
 		event.StartsAt,
 		event.OwnerUserID,
-		time.Now(),
 	)
 
 	var model EventModel
 
-	err := row.Scan(
+	err = row.Scan(
 		&model.ID,
 		&model.Version,
 		&model.Title,
@@ -71,12 +102,26 @@ func (r *EventsRepository) CreateEvent(
 			return domain.Event{}, fmt.Errorf(
 				"%v: user with id='%d': %w",
 				err,
-				event.ID,
+				event.OwnerUserID,
 				core_errors.ErrNotFound,
+			)
+		}
+		if errors.Is(err, core_postgres_pool.ErrViolatesCheck) {
+			return domain.Event{}, fmt.Errorf(
+				"violates check constraint: %v: %w",
+				err,
+				core_errors.ErrInvalidArgument,
 			)
 		}
 		return domain.Event{}, fmt.Errorf(
 			"scan error: %w",
+			err,
+		)
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return domain.Event{}, fmt.Errorf(
+			"commit create event error: %w",
 			err,
 		)
 	}

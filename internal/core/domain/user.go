@@ -2,27 +2,30 @@ package domain
 
 import (
 	"fmt"
-	"net/mail"
 	"regexp"
 	"time"
 
-	coreerrors "booking/internal/core/errors"
+	core_errors "booking/internal/core/errors"
 )
 
 const (
 	userNameMinLen  = 3
 	userNameMaxLen  = 100
 	userEmailMaxLen = 100
+	userEmailMinLen = 9
 )
 
-var phoneRe = regexp.MustCompile(`^\+[0-9]{9,14}$`)
+var (
+	phoneRe = regexp.MustCompile(`^\+[0-9]{9,14}$`)
+	mailRe  = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+)
 
 type User struct {
 	ID          int
 	Version     int
 	Name        string
 	PhoneNumber *string
-	Email       *string
+	Mail        *string
 	CreatedAt   time.Time
 }
 
@@ -31,7 +34,7 @@ func NewUser(
 	version int,
 	name string,
 	phoneNumber *string,
-	email *string,
+	mail *string,
 	createdAt time.Time,
 ) User {
 	return User{
@@ -39,7 +42,7 @@ func NewUser(
 		Version:     version,
 		Name:        name,
 		PhoneNumber: phoneNumber,
-		Email:       email,
+		Mail:        mail,
 		CreatedAt:   createdAt,
 	}
 }
@@ -47,14 +50,14 @@ func NewUser(
 func NewUninitializedUser(
 	name string,
 	phoneNumber *string,
-	email *string,
+	mail *string,
 ) User {
 	return NewUser(
 		UninitializedID,
 		UninitializedVersion,
 		name,
 		phoneNumber,
-		email,
+		mail,
 		UninitializedCreatedAt,
 	)
 }
@@ -67,19 +70,19 @@ func (u *User) Validate() error {
 			userNameMinLen,
 			userNameMaxLen,
 			nameLen,
-			coreerrors.ErrInvalidArgument,
+			core_errors.ErrInvalidArgument,
 		)
 	}
 
 	if u.PhoneNumber != nil && !phoneRe.MatchString(*u.PhoneNumber) {
 		return fmt.Errorf(
 			"invalid phone number format, expected +XXXXXXXXXX (10-15 chars): %w",
-			coreerrors.ErrInvalidArgument,
+			core_errors.ErrInvalidArgument,
 		)
 	}
 
-	if u.Email != nil {
-		if err := validateEmail(*u.Email); err != nil {
+	if u.Mail != nil {
+		if err := validateMail(*u.Mail); err != nil {
 			return err
 		}
 	}
@@ -87,20 +90,20 @@ func (u *User) Validate() error {
 	return nil
 }
 
-func validateEmail(email string) error {
-	if len([]rune(email)) > userEmailMaxLen {
+func validateMail(mail string) error {
+	if l := len([]rune(mail)); l > userEmailMaxLen || l < userEmailMinLen {
 		return fmt.Errorf(
-			"email len must be at most %d: %w",
+			"email len must be between %d and %d: %w",
+			userEmailMinLen,
 			userEmailMaxLen,
-			coreerrors.ErrInvalidArgument,
+			core_errors.ErrInvalidArgument,
 		)
 	}
 
-	addr, err := mail.ParseAddress(email)
-	if err != nil || addr.Address != email {
+	if !mailRe.MatchString(mail) {
 		return fmt.Errorf(
-			"invalid email format: %w",
-			coreerrors.ErrInvalidArgument,
+			"invalid mail format: %w",
+			core_errors.ErrInvalidArgument,
 		)
 	}
 
@@ -110,18 +113,18 @@ func validateEmail(email string) error {
 type PatchUser struct {
 	Name        Nullable[string]
 	PhoneNumber Nullable[string]
-	Email       Nullable[string]
+	Mail        Nullable[string]
 }
 
 func NewPatchUser(
 	name Nullable[string],
 	phoneNumber Nullable[string],
-	email Nullable[string],
+	mail Nullable[string],
 ) PatchUser {
 	return PatchUser{
 		Name:        name,
 		PhoneNumber: phoneNumber,
-		Email:       email,
+		Mail:        mail,
 	}
 }
 
@@ -129,7 +132,7 @@ func (p PatchUser) Validate() error {
 	if p.Name.Set && p.Name.Value == nil {
 		return fmt.Errorf(
 			"name can't be set and null: %w",
-			coreerrors.ErrInvalidArgument,
+			core_errors.ErrInvalidArgument,
 		)
 	}
 
@@ -151,8 +154,8 @@ func (u *User) ApplyPatch(patch PatchUser) error {
 		tmp.PhoneNumber = patch.PhoneNumber.Value
 	}
 
-	if patch.Email.Set {
-		tmp.Email = patch.Email.Value
+	if patch.Mail.Set {
+		tmp.Mail = patch.Mail.Value
 	}
 
 	if err := tmp.Validate(); err != nil {
@@ -161,7 +164,7 @@ func (u *User) ApplyPatch(patch PatchUser) error {
 
 	u.Name = tmp.Name
 	u.PhoneNumber = tmp.PhoneNumber
-	u.Email = tmp.Email
+	u.Mail = tmp.Mail
 
 	return nil
 }

@@ -54,7 +54,7 @@ func (r *BookRepository) CreateBook(
 	}
 
 	queryGetTickets := `
-		SELECT total_tickets, canceled_at, event_time FROM booking.events
+		SELECT total_tickets, canceled_at, start_at <= now() FROM booking.events
 		WHERE id = $1 
 		FOR UPDATE;
 	`
@@ -62,7 +62,7 @@ func (r *BookRepository) CreateBook(
 	var (
 		totalTickets int
 		canceledAt   *time.Time
-		eventTime    time.Time
+		passed       bool
 	)
 
 	row = tx.QueryRow(ctx, queryGetTickets, book.EventID)
@@ -70,7 +70,7 @@ func (r *BookRepository) CreateBook(
 	err = row.Scan(
 		&totalTickets,
 		&canceledAt,
-		&eventTime,
+		&passed,
 	)
 	if err != nil {
 		if errors.Is(err, core_postgres_pool.ErrNoRows) {
@@ -95,9 +95,9 @@ func (r *BookRepository) CreateBook(
 		)
 	}
 
-	if time.Now().After(eventTime) {
+	if passed {
 		return domain.Booking{}, fmt.Errorf(
-			"event with id='%d' is alredy passed: %w",
+			"event with id='%d' is already passed: %w",
 			book.EventID,
 			core_errors.ErrConflict,
 		)
@@ -125,7 +125,7 @@ func (r *BookRepository) CreateBook(
 
 	if userBooked >= maxUserBooksForEvent {
 		return domain.Booking{}, fmt.Errorf(
-			"no avaliable tickets for user: %w",
+			"no available tickets for user: %w",
 			core_errors.ErrConflict,
 		)
 	}
@@ -140,10 +140,9 @@ func (r *BookRepository) CreateBook(
 	queryCreateBooking := `
 		INSERT INTO booking.bookings (
 			event_id,
-			user_id,
-			created_at
+			user_id
 		)
-		VALUES($1, $2, $3)
+		VALUES($1, $2)
 		RETURNING
 			id,
 			event_id,
@@ -157,7 +156,6 @@ func (r *BookRepository) CreateBook(
 		queryCreateBooking,
 		book.EventID,
 		book.UserID,
-		time.Now(),
 	)
 
 	var model BookModel
@@ -170,6 +168,13 @@ func (r *BookRepository) CreateBook(
 		&model.CanceledAt,
 	)
 	if err != nil {
+		if errors.Is(err, core_postgres_pool.ErrViolatesCheck) {
+			return domain.Booking{}, fmt.Errorf(
+				"violates check constraint: %v: %w",
+				err,
+				core_errors.ErrInvalidArgument,
+			)
+		}
 		return domain.Booking{}, fmt.Errorf(
 			"scan error: %w",
 			err,

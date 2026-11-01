@@ -21,7 +21,7 @@ func (s *BookService) CreateBook(
 
 	if err != nil {
 		return domain.Booking{}, fmt.Errorf(
-			"failed to cvreate book: %w",
+			"failed to create book: %w",
 			err,
 		)
 	}

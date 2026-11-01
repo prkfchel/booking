@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	coreerrors "booking/internal/core/errors"
+	core_errors "booking/internal/core/errors"
 )
 
 type Booking struct {
@@ -49,7 +49,7 @@ func (b *Booking) Validate() error {
 		return fmt.Errorf(
 			"event id must be positive: %d: %w",
 			b.EventID,
-			coreerrors.ErrInvalidArgument,
+			core_errors.ErrInvalidArgument,
 		)
 	}
 
@@ -57,7 +57,7 @@ func (b *Booking) Validate() error {
 		return fmt.Errorf(
 			"user id must be positive: %d: %w",
 			b.UserID,
-			coreerrors.ErrInvalidArgument,
+			core_errors.ErrInvalidArgument,
 		)
 	}
 

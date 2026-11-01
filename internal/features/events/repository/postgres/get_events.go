@@ -22,7 +22,7 @@ func (r *EventsRepository) GetEvents(
 			total_tickets, 
 			created_at, 
 			event_address, 
-			event_time, 
+			start_at, 
 			owners_user_id,
 			canceled_at
 		FROM booking.events
@@ -38,22 +38,22 @@ func (r *EventsRepository) GetEvents(
 
 	if filter.Title != nil {
 		argsCount++
-		conditions = append(conditions, fmt.Sprintf("title = $%d", argsCount))
-		args = append(args, *filter.Title)
+		conditions = append(conditions, fmt.Sprintf("title ILIKE $%d", argsCount))
+		args = append(args, "%"+escapeLike(*filter.Title)+"%")
 	}
 	if filter.Address != nil {
 		argsCount++
-		conditions = append(conditions, fmt.Sprintf("event_address = $%d", argsCount))
-		args = append(args, *filter.Address)
+		conditions = append(conditions, fmt.Sprintf("event_address ILIKE $%d", argsCount))
+		args = append(args, "%"+escapeLike(*filter.Address)+"%")
 	}
 	if filter.DateFrom != nil {
 		argsCount++
-		conditions = append(conditions, fmt.Sprintf("event_time > $%d", argsCount))
+		conditions = append(conditions, fmt.Sprintf("start_at > $%d", argsCount))
 		args = append(args, *filter.DateFrom)
 	}
 	if filter.DateTo != nil {
 		argsCount++
-		conditions = append(conditions, fmt.Sprintf("event_time < $%d", argsCount))
+		conditions = append(conditions, fmt.Sprintf("start_at < $%d", argsCount))
 		args = append(args, *filter.DateTo)
 	}
 	if filter.OwnerUserID != nil {
@@ -116,4 +116,8 @@ func (r *EventsRepository) GetEvents(
 	events := DomainsFromModels(models)
 
 	return events, nil
+}
+
+func escapeLike(s string) string {
+	return strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`).Replace(s)
 }

@@ -26,7 +26,7 @@ func (r *UsersRepository) PatchUser(
 		RETURNING id, version, name, phone_number, mail, created_at;
 	`
 
-	row := r.Pool.QueryRow(ctx, queryPatchUser, user.Name, user.PhoneNumber, user.Email, user.ID, user.Version)
+	row := r.Pool.QueryRow(ctx, queryPatchUser, user.Name, user.PhoneNumber, user.Mail, user.ID, user.Version)
 
 	var model UserModel
 
@@ -39,12 +39,26 @@ func (r *UsersRepository) PatchUser(
 		&model.CreatedAt,
 	)
 	if err != nil {
-		if errors.Is(core_postgres_pool.ErrNoRows, err) {
+		if errors.Is(err, core_postgres_pool.ErrNoRows) {
 			return domain.User{}, fmt.Errorf(
 				"user with id='%d': %w: %v",
 				user.ID,
 				core_errors.ErrConflict,
 				err,
+			)
+		}
+		if errors.Is(err, core_postgres_pool.ErrViolatesUnique) {
+			return domain.User{}, fmt.Errorf(
+				"phone number or mail is already in use: %v: %w",
+				err,
+				core_errors.ErrConflict,
+			)
+		}
+		if errors.Is(err, core_postgres_pool.ErrViolatesCheck) {
+			return domain.User{}, fmt.Errorf(
+				"violates check constraint: %v: %w",
+				err,
+				core_errors.ErrInvalidArgument,
 			)
 		}
 		return domain.User{}, fmt.Errorf(

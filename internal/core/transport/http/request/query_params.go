@@ -66,6 +66,8 @@ func GetLimitOffsetQueryParams(r *http.Request) (*int, *int, error) {
 
 	const (
 		limitQueryParamKey  = "limit"
+		limitMaxValue       = 200
+		limitDefaultValue   = 50
 		offsetQueryParamKey = "offset"
 	)
 
@@ -85,16 +87,20 @@ func GetLimitOffsetQueryParams(r *http.Request) (*int, *int, error) {
 		)
 	}
 
-	if limit != nil && *limit < 1 {
+	if limit == nil {
+		l := limitDefaultValue
+		limit = &l
+	} else if *limit < 1 || *limit > limitMaxValue {
 		return nil, nil, fmt.Errorf(
-			"limit query param must be positive %w",
+			"limit query param must be between 1 and %d: %w",
+			limitMaxValue,
 			core_errors.ErrInvalidArgument,
 		)
 	}
 
 	if offset != nil && *offset < 0 {
 		return nil, nil, fmt.Errorf(
-			"offset query param cant be negative: %w",
+			"offset query param can't be negative: %w",
 			core_errors.ErrInvalidArgument,
 		)
 	}

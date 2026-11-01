@@ -14,13 +14,15 @@ const (
 	requestIDHeader = "X-Request-ID"
 )
 
-func CORS() MiddleWare {
+func CORS(allowedOriginsList []string) MiddleWare {
+	allowedOrigins := make(map[string]struct{})
+
+	for _, origin := range allowedOriginsList {
+		allowedOrigins[origin] = struct{}{}
+	}
+
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			allowedOrigins := map[string]struct{}{
-				"http://localhost:5050": {},
-			}
-
 			origin := r.Header.Get("Origin")
 
 			if _, ok := allowedOrigins[origin]; ok {
@@ -90,7 +92,7 @@ func Trace() MiddleWare {
 			log.Debug(
 				"<<< done http request",
 				zap.Int("status_code", rw.GetStatusCode()),
-				zap.Duration("latenct", time.Since(before)),
+				zap.Duration("latency", time.Since(before)),
 			)
 		})
 	}

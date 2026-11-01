@@ -24,7 +24,7 @@ func (r *EventsRepository) GetEvent(
 			total_tickets, 
 			created_at, 
 			event_address, 
-			event_time, 
+			start_at, 
 			owners_user_id,
 			canceled_at FROM booking.events
 		WHERE id = $1;

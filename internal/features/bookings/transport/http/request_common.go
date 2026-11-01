@@ -10,17 +10,17 @@ import (
 func getBookIDPathValue(r *http.Request) (int, error) {
 	const bookIdPathValueKey = "id"
 
-	id, err := core_http_request.GetIntPathValuese(r, bookIdPathValueKey)
+	id, err := core_http_request.GetIntPathValues(r, bookIdPathValueKey)
 	if err != nil {
 		return 0, fmt.Errorf(
-			"faild to get id path value: %w",
+			"failed to get booking id path value: %w",
 			err,
 		)
 	}
 
 	if id < 1 {
 		return 0, fmt.Errorf(
-			"book id is must be positive: %v: %w",
+			"booking id must be positive: %v: %w",
 			id,
 			core_errors.ErrInvalidArgument,
 		)

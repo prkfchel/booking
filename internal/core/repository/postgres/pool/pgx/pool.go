@@ -4,6 +4,8 @@ import (
 	core_postgres_pool "booking/internal/core/repository/postgres/pool"
 	"context"
 	"fmt"
+	"net"
+	"net/url"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -18,16 +20,15 @@ func NewPool(
 	ctx context.Context,
 	config Config,
 ) (*Pool, error) {
-	ConnectionString := fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
-		config.User,
-		config.Password,
-		config.Host,
-		config.Port,
-		config.Database,
-	)
+	connUrl := url.URL{
+		Scheme:   "postgres",
+		User:     url.UserPassword(config.User, config.Password),
+		Host:     net.JoinHostPort(config.Host, config.Port),
+		Path:     config.Database,
+		RawQuery: "sslmode=disable",
+	}
 
-	pgxconfig, err := pgxpool.ParseConfig(ConnectionString)
+	pgxconfig, err := pgxpool.ParseConfig(connUrl.String())
 	if err != nil {
 		return nil, fmt.Errorf("parse pgxconfig: %w", err)
 	}
@@ -59,7 +60,7 @@ func (p *Pool) Query(
 	rows, err := p.Pool.Query(ctx, sql, args...)
 
 	if err != nil {
-		return pgxRows{}, err
+		return pgxRows{}, mapErrors(err)
 	}
 
 	return pgxRows{Rows: rows}, nil
@@ -82,17 +83,17 @@ func (p *Pool) Exec(
 ) (core_postgres_pool.CommandTag, error) {
 	CommandTad, err := p.Pool.Exec(ctx, sql, arguments...)
 	if err != nil {
-		return pgxCommandTag{}, err
+		return pgxCommandTag{}, mapErrors(err)
 	}
 
-	return CommandTad, nil
+	return pgxCommandTag{CommandTag: CommandTad}, nil
 }
 
 func (p *Pool) Begin(ctx context.Context) (core_postgres_pool.Tx, error) {
 	tx, err := p.Pool.Begin(ctx)
 
 	if err != nil {
-		return &pgxTx{}, err
+		return nil, mapErrors(err)
 	}
 
 	return &pgxTx{Tx: tx}, nil

@@ -39,7 +39,13 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "type": "integer",
+                        "type": "string",
+                        "description": "Начало временного интервала",
+                        "name": "dateFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "Конец временного интервала",
                         "name": "dateTo",
                         "in": "query"
@@ -95,7 +101,7 @@ const docTemplate = `{
                 "summary": "Создать бронь",
                 "parameters": [
                     {
-                        "description": "CreateEvent тело запроса",
+                        "description": "CreateBook тело запроса",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -117,44 +123,14 @@ const docTemplate = `{
                             "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
                         }
                     },
-                    "500": {
-                        "description": "Internal server error",
+                    "404": {
+                        "description": "Not found",
                         "schema": {
                             "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
                         }
-                    }
-                }
-            }
-        },
-        "/books/cancel": {
-            "post": {
-                "description": "Отменить бронь в системе",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "bookings"
-                ],
-                "summary": "Отменить бронь",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "ID отменяемой брони",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Бронь успешно отменена",
-                        "schema": {
-                            "$ref": "#/definitions/internal_features_bookings_transport_http.cancelBookResponseDTO"
-                        }
                     },
-                    "400": {
-                        "description": "Bad request",
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
                         }
@@ -180,7 +156,7 @@ const docTemplate = `{
                 "summary": "Получение брони",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "format": "uuid",
                         "description": "ID получаемой брони",
                         "name": "id",
@@ -202,7 +178,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "Event not found",
+                        "description": "Booking not found",
                         "schema": {
                             "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
                         }
@@ -216,43 +192,31 @@ const docTemplate = `{
                 }
             }
         },
-        "/event/{id}": {
-            "patch": {
-                "description": "Изменение информации об уже существующем в системе событии\n### Логика обновления полей (Three-state logic):\n1. **Поле не передано**: ` + "`" + `description` + "`" + ` игнорируется, значение в БД не меняется\n2. **Явно передано значение**: ` + "`" + `\"description\": \"событие бла-бла-бла\"` + "`" + ` - устанавливает новое описание в БД\n3. **Передан null**: ` + "`" + `\"description\": null` + "`" + ` - очищает поле в БД (set to NULL)\nОграничения: ` + "`" + `title` + "`" + ` не может быть выставлен как null\nОграничения: ` + "`" + `total_tickets` + "`" + ` не может быть выставлен как null\nОграничения: ` + "`" + `address` + "`" + ` не может быть выставлен как null\nОграничения: ` + "`" + `starts_at` + "`" + ` не может быть выставлен как null",
-                "consumes": [
-                    "application/json"
-                ],
+        "/books/{id}/cancel": {
+            "post": {
+                "description": "Отменить бронь в системе",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "events"
+                    "bookings"
                 ],
-                "summary": "Изменение события",
+                "summary": "Отменить бронь",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "format": "uuid",
-                        "description": "ID изменяемого события",
+                        "description": "ID отменяемой брони",
                         "name": "id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "PatchEvent тело запроса",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_features_events_transport_http.patchEventRequestDTO"
-                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Успешно изменённый пользователь",
+                        "description": "Бронь успешно отменена",
                         "schema": {
-                            "$ref": "#/definitions/internal_features_events_transport_http.patchEventResponseDTO"
+                            "$ref": "#/definitions/internal_features_bookings_transport_http.cancelBookResponseDTO"
                         }
                     },
                     "400": {
@@ -262,7 +226,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "event not found",
+                        "description": "Not found",
                         "schema": {
                             "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
                         }
@@ -284,10 +248,7 @@ const docTemplate = `{
         },
         "/events": {
             "get": {
-                "description": "Просмотр списка событий с опциональной пагинацией и фильтрацией по названию и аддресу, времяни проведениря и id организатора",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Просмотр списка событий с опциональной пагинацией и фильтрацией по названию и адресу, времяни проведениря и id организатора",
                 "produces": [
                     "application/json"
                 ],
@@ -309,7 +270,13 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "type": "integer",
+                        "type": "string",
+                        "description": "Начало временного интервала",
+                        "name": "dateFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "Конец временного интервала",
                         "name": "dateTo",
                         "in": "query"
@@ -321,13 +288,16 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "description": "GetEvents тело запроса",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/internal_features_events_transport_http.getEventsRequestDTO"
-                        }
+                        "type": "string",
+                        "description": "Название мероприятия",
+                        "name": "title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Адрес мероприятия",
+                        "name": "address",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -390,44 +360,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
                         }
                     },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/events/cancel": {
-            "post": {
-                "description": "Отменить событие в системе",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "events"
-                ],
-                "summary": "Отменить событие",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "ID отменяемого события",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Событие успешно отменено",
-                        "schema": {
-                            "$ref": "#/definitions/internal_features_events_transport_http.cancelEventResponseDTO"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
+                    "404": {
+                        "description": "Not found",
                         "schema": {
                             "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
                         }
@@ -453,7 +387,7 @@ const docTemplate = `{
                 "summary": "Получение события",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "format": "uuid",
                         "description": "ID получаемого события",
                         "name": "id",
@@ -465,7 +399,7 @@ const docTemplate = `{
                     "200": {
                         "description": "событие успешно найдено",
                         "schema": {
-                            "$ref": "#/definitions/internal_features_events_transport_http.getEventReaponseDTO"
+                            "$ref": "#/definitions/internal_features_events_transport_http.getEventResponseDTO"
                         }
                     },
                     "400": {
@@ -476,6 +410,124 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Event not found",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Изменение информации об уже существующем в системе событии\n### Логика обновления полей (Three-state logic):\n1. **Поле не передано**: ` + "`" + `description` + "`" + ` игнорируется, значение в БД не меняется\n2. **Явно передано значение**: ` + "`" + `\"description\": \"событие бла-бла-бла\"` + "`" + ` - устанавливает новое описание в БД\n3. **Передан null**: ` + "`" + `\"description\": null` + "`" + ` - очищает поле в БД (set to NULL)\nОграничения: ` + "`" + `title` + "`" + ` не может быть выставлен как null\nОграничения: ` + "`" + `total_tickets` + "`" + ` не может быть выставлен как null\nОграничения: ` + "`" + `address` + "`" + ` не может быть выставлен как null\nОграничения: ` + "`" + `starts_at` + "`" + ` не может быть выставлен как null",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Изменение события",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "format": "uuid",
+                        "description": "ID изменяемого события",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "PatchEvent тело запроса",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_events_transport_http.patchEventRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешно изменённое событие",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_events_transport_http.patchEventResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "event not found",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/events/{id}/cancel": {
+            "post": {
+                "description": "Отменить событие в системе",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "events"
+                ],
+                "summary": "Отменить событие",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "format": "uuid",
+                        "description": "ID отменяемого события",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Событие успешно отменено",
+                        "schema": {
+                            "$ref": "#/definitions/internal_features_events_transport_http.cancelEventResponseDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
                         }
@@ -573,6 +625,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
                         }
                     },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/booking_internal_core_transport_http_response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
@@ -594,7 +652,7 @@ const docTemplate = `{
                 "summary": "Получение пользователя",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "format": "uuid",
                         "description": "ID получаемого пользователя",
                         "name": "id",
@@ -637,7 +695,7 @@ const docTemplate = `{
                 "summary": "Удаление пользователя",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "format": "uuid",
                         "description": "ID удаляемого пользователя",
                         "name": "id",
@@ -683,7 +741,7 @@ const docTemplate = `{
                 "summary": "Изменение пользователя",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "format": "uuid",
                         "description": "ID изменяемого пользователя",
                         "name": "id",
@@ -930,7 +988,7 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2026-11-10T19:30:00Z"
                 },
-                "tite": {
+                "title": {
                     "type": "string",
                     "example": "concert"
                 },
@@ -975,7 +1033,7 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2026-11-10T19:30:00Z"
                 },
-                "tite": {
+                "title": {
                     "type": "string",
                     "example": "concert"
                 },
@@ -1006,7 +1064,7 @@ const docTemplate = `{
                 },
                 "description": {
                     "type": "string",
-                    "minLength": 2,
+                    "minLength": 5,
                     "example": "interesting concert and show"
                 },
                 "owner_user_id": {
@@ -1061,7 +1119,7 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2026-11-10T19:30:00Z"
                 },
-                "tite": {
+                "title": {
                     "type": "string",
                     "example": "concert"
                 },
@@ -1075,7 +1133,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_features_events_transport_http.getEventReaponseDTO": {
+        "internal_features_events_transport_http.getEventResponseDTO": {
             "type": "object",
             "properties": {
                 "address": {
@@ -1106,7 +1164,7 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2026-11-10T19:30:00Z"
                 },
-                "tite": {
+                "title": {
                     "type": "string",
                     "example": "concert"
                 },
@@ -1117,19 +1175,6 @@ const docTemplate = `{
                 "version": {
                     "type": "integer",
                     "example": 3
-                }
-            }
-        },
-        "internal_features_events_transport_http.getEventsRequestDTO": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "type": "string",
-                    "example": "st. Pushkina, b. Kalatushkina"
-                },
-                "title": {
-                    "type": "string",
-                    "example": "concert"
                 }
             }
         },
@@ -1184,7 +1229,7 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2026-11-10T19:30:00Z"
                 },
-                "tite": {
+                "title": {
                     "type": "string",
                     "example": "concert"
                 },
@@ -1205,10 +1250,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "mail": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 9,
-                    "example": "user@mail.com"
+                    "type": "string"
                 },
                 "name": {
                     "type": "string",
@@ -1231,13 +1273,13 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2006-10-09T12:55:45.159001Z"
                 },
-                "email": {
-                    "type": "string",
-                    "example": "user@mail.com"
-                },
                 "id": {
                     "type": "integer",
                     "example": 10
+                },
+                "mail": {
+                    "type": "string",
+                    "example": "user@mail.com"
                 },
                 "name": {
                     "type": "string",
@@ -1274,13 +1316,13 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2006-10-09T12:55:45.159001Z"
                 },
-                "email": {
-                    "type": "string",
-                    "example": "user@mail.com"
-                },
                 "id": {
                     "type": "integer",
                     "example": 10
+                },
+                "mail": {
+                    "type": "string",
+                    "example": "user@mail.com"
                 },
                 "name": {
                     "type": "string",
@@ -1303,13 +1345,13 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2006-10-09T12:55:45.159001Z"
                 },
-                "email": {
-                    "type": "string",
-                    "example": "user@mail.com"
-                },
                 "id": {
                     "type": "integer",
                     "example": 10
+                },
+                "mail": {
+                    "type": "string",
+                    "example": "user@mail.com"
                 },
                 "name": {
                     "type": "string",
@@ -1332,13 +1374,13 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2006-10-09T12:55:45.159001Z"
                 },
-                "email": {
-                    "type": "string",
-                    "example": "user@mail.com"
-                },
                 "id": {
                     "type": "integer",
                     "example": 10
+                },
+                "mail": {
+                    "type": "string",
+                    "example": "user@mail.com"
                 },
                 "name": {
                     "type": "string",
